@@ -2,39 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ChurnFlow Design System - Professional B2B Analytics Theme */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Dark analytics theme */
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 223 47% 6%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 223 47% 6%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
+    /* Purple-blue primary theme for analytics */
+    --primary: 262 100% 70%;
     --primary-foreground: 210 40% 98%;
+    --primary-glow: 262 100% 85%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 223 47% 11%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 223 47% 11%;
+    --input: 223 47% 11%;
+    --ring: 262 100% 70%;
+
+    /* Custom design tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(262 100% 70%), hsl(252 83% 58%));
+    --gradient-secondary: linear-gradient(135deg, hsl(223 47% 11%), hsl(223 47% 8%));
+    --gradient-hero: linear-gradient(135deg, hsl(262 100% 70% / 0.1), hsl(252 83% 58% / 0.05));
+    
+    --shadow-glow: 0 0 40px hsl(262 100% 70% / 0.3);
+    --shadow-card: 0 4px 20px hsl(222 47% 4% / 0.5);
+    --shadow-elegant: 0 10px 30px -10px hsl(262 100% 70% / 0.2);
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --radius: 0.5rem;
 
