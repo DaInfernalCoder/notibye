@@ -28,7 +28,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
+    // DEV MODE: Skip real auth for development
+    const DEV_MODE = true;
+    
+    if (DEV_MODE) {
+      // Create a mock user for development
+      const mockUser = {
+        id: 'dev-user-123',
+        email: 'dev@churnflow.com', 
+        created_at: new Date().toISOString(),
+        app_metadata: {},
+        user_metadata: {},
+        aud: 'authenticated',
+        role: 'authenticated'
+      } as User;
+      
+      setUser(mockUser);
+      setSession({ 
+        access_token: 'dev-token',
+        refresh_token: 'dev-refresh',
+        expires_in: 3600,
+        token_type: 'bearer',
+        user: mockUser
+      } as Session);
+      setLoading(false);
+      return;
+    }
+
+    // Real auth logic (disabled in dev mode)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
@@ -37,7 +64,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
