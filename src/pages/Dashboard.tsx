@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Settings, Plus, Activity, Mail, CreditCard } from 'lucide-react';
+import TestChurnFlow from '@/components/TestChurnFlow';
 
 interface Integration {
   id: string;
@@ -112,6 +113,12 @@ const Dashboard = () => {
           <p className="text-muted-foreground">
             Welcome back! Monitor your churn analytics and manage integrations.
           </p>
+        </div>
+
+        {/* Test Section for Development */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Development Testing</h2>
+          <TestChurnFlow />
         </div>
 
         {/* Integrations Section */}

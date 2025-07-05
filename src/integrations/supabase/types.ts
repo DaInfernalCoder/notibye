@@ -83,6 +83,51 @@ export type Database = {
           },
         ]
       }
+      usage_analytics: {
+        Row: {
+          active_days: number | null
+          analytics_data: Json | null
+          created_at: string
+          customer_email: string
+          engagement_score: number | null
+          id: string
+          last_seen: string | null
+          most_used_feature: string | null
+          period_end: string
+          period_start: string
+          total_events: number | null
+          user_id: string | null
+        }
+        Insert: {
+          active_days?: number | null
+          analytics_data?: Json | null
+          created_at?: string
+          customer_email: string
+          engagement_score?: number | null
+          id?: string
+          last_seen?: string | null
+          most_used_feature?: string | null
+          period_end: string
+          period_start: string
+          total_events?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          active_days?: number | null
+          analytics_data?: Json | null
+          created_at?: string
+          customer_email?: string
+          engagement_score?: number | null
+          id?: string
+          last_seen?: string | null
+          most_used_feature?: string | null
+          period_end?: string
+          period_start?: string
+          total_events?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_integrations: {
         Row: {
           additional_config: Json | null
@@ -140,6 +185,60 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      waitlist_signups: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_id: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          processed: boolean | null
+          stripe_event_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          processed?: boolean | null
+          stripe_event_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          processed?: boolean | null
+          stripe_event_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
