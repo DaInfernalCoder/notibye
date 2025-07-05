@@ -1,67 +1,45 @@
-import { TrendingDown, Twitter, Github, Linkedin } from "lucide-react";
-
 const Footer = () => {
   return (
-    <footer className="bg-background border-t border-border/50">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-4 gap-8">
+    <footer className="bg-background border-t border-border">
+      <div className="container mx-auto px-6 py-16">
+        <div className="grid md:grid-cols-4 gap-12">
           {/* Brand */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <TrendingDown className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">ChurnFlow</span>
+          <div className="space-y-6">
+            <div className="flex items-center">
+              <span className="text-xl font-semibold">ChurnFlow</span>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               Understand why customers churn and win them back with data-driven insights.
             </p>
-            <div className="flex items-center gap-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Github className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Linkedin className="w-5 h-5" />
-              </a>
-            </div>
           </div>
 
           {/* Product */}
           <div className="space-y-4">
-            <h3 className="font-semibold">Product</h3>
-            <div className="space-y-2">
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
+            <h3 className="font-medium text-sm">Product</h3>
+            <div className="space-y-3">
+              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors text-sm">
                 Features
               </a>
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors text-sm">
                 Pricing
               </a>
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors text-sm">
                 Integrations
-              </a>
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
-                API
               </a>
             </div>
           </div>
 
           {/* Resources */}
           <div className="space-y-4">
-            <h3 className="font-semibold">Resources</h3>
-            <div className="space-y-2">
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
+            <h3 className="font-medium text-sm">Resources</h3>
+            <div className="space-y-3">
+              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors text-sm">
                 Documentation
               </a>
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors text-sm">
                 Blog
               </a>
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
-                Guides
-              </a>
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors text-sm">
                 Support
               </a>
             </div>
@@ -69,26 +47,23 @@ const Footer = () => {
 
           {/* Company */}
           <div className="space-y-4">
-            <h3 className="font-semibold">Company</h3>
-            <div className="space-y-2">
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
+            <h3 className="font-medium text-sm">Company</h3>
+            <div className="space-y-3">
+              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors text-sm">
                 About
               </a>
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
-                Careers
-              </a>
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors text-sm">
                 Privacy
               </a>
-              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" className="block text-muted-foreground hover:text-foreground transition-colors text-sm">
                 Terms
               </a>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border/50 text-center text-muted-foreground">
-          <p>&copy; 2024 ChurnFlow. All rights reserved.</p>
+        <div className="mt-16 pt-8 border-t border-border text-center">
+          <p className="text-muted-foreground text-sm">&copy; 2024 ChurnFlow. All rights reserved.</p>
         </div>
       </div>
     </footer>

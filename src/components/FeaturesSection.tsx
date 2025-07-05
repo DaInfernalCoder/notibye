@@ -1,70 +1,49 @@
-import { Card } from "@/components/ui/card";
-import { Zap, Users, Mail, BarChart3, Clock, Shield } from "lucide-react";
+import { Search, BarChart3, Zap } from "lucide-react";
 
 const features = [
   {
     icon: Zap,
-    title: "Instant Alerts",
-    description: "Get notified the moment a customer cancels their subscription or payment fails."
+    title: "AI-Powered Analysis",
+    description: "Our AI watches every customer interaction, identifying patterns and labeling key moments automatically."
+  },
+  {
+    icon: Search,
+    title: "Semantic Search",
+    description: "Search for specific user behaviors across thousands of customers using natural language."
   },
   {
     icon: BarChart3,
-    title: "Usage Analytics",
-    description: "See exactly how customers used your product in their final 30 days."
-  },
-  {
-    icon: Mail,
-    title: "Smart Emails",
-    description: "Automatically send personalized insights to help you understand the churn."
-  },
-  {
-    icon: Users,
-    title: "Customer Insights",
-    description: "Track engagement patterns, feature usage, and behavioral trends."
-  },
-  {
-    icon: Clock,
-    title: "Real-time Data",
-    description: "Connect Stripe webhooks and PostHog events for instant synchronization."
-  },
-  {
-    icon: Shield,
-    title: "Secure & Private",
-    description: "Your data is encrypted and never shared. Full GDPR compliance."
+    title: "Behavioral KPIs",
+    description: "Transform qualitative user behavior into quantifiable metrics that drive product decisions."
   }
 ];
 
 const FeaturesSection = () => {
   return (
-    <section className="py-24 bg-gradient-secondary">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-5xl font-bold mb-6">
-            Everything You Need to
-            <span className="bg-gradient-primary bg-clip-text text-transparent"> Reduce Churn</span>
+    <section className="py-32 bg-background">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-24">
+          <h2 className="text-4xl lg:text-6xl font-bold mb-8">
+            Stop watching endless videos
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            ChurnFlow connects your existing tools to give you actionable insights 
-            about why customers leave and how to win them back.
+            ChurnFlow turns your customer data into searchable, quantifiable insights.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-16 max-w-6xl mx-auto">
           {features.map((feature, index) => (
-            <Card 
-              key={index} 
-              className="p-8 bg-card/50 backdrop-blur-sm border-border/50 hover:shadow-elegant transition-all duration-300 group"
-            >
-              <div className="mb-6">
-                <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center mb-4 group-hover:shadow-glow transition-all duration-300">
-                  <feature.icon className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">
+            <div key={index} className="text-center space-y-6">
+              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
+                <feature.icon className="w-8 h-8 text-primary" />
+              </div>
+              <div className="space-y-4">
+                <h3 className="text-2xl font-semibold">{feature.title}</h3>
+                <p className="text-muted-foreground text-lg leading-relaxed">
                   {feature.description}
                 </p>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       </div>
