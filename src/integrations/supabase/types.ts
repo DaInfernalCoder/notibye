@@ -9,7 +9,140 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      churn_events: {
+        Row: {
+          created_at: string
+          customer_email: string
+          customer_id: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          processed_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          customer_id: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          processed_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          customer_id?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          processed_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sent_emails: {
+        Row: {
+          churn_event_id: string | null
+          email_content: string
+          id: string
+          recipient_email: string
+          sent_at: string
+          subject: string
+          usage_summary: Json | null
+          user_id: string
+        }
+        Insert: {
+          churn_event_id?: string | null
+          email_content: string
+          id?: string
+          recipient_email: string
+          sent_at?: string
+          subject: string
+          usage_summary?: Json | null
+          user_id: string
+        }
+        Update: {
+          churn_event_id?: string | null
+          email_content?: string
+          id?: string
+          recipient_email?: string
+          sent_at?: string
+          subject?: string
+          usage_summary?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sent_emails_churn_event_id_fkey"
+            columns: ["churn_event_id"]
+            isOneToOne: false
+            referencedRelation: "churn_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_integrations: {
+        Row: {
+          additional_config: Json | null
+          api_key: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          service_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_config?: Json | null
+          api_key: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          service_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_config?: Json | null
+          api_key?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          service_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          email: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

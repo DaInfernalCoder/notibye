@@ -3,25 +3,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Mail, CheckCircle } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const CTASection = () => {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    
-    // TODO: Connect to Supabase to store email
-    console.log("Waitlist email:", email);
-    setIsSubmitted(true);
-    setEmail("");
-    
-    toast({
-      title: "You're on the waitlist!",
-      description: "We'll notify you when ChurnFlow is ready.",
-    });
+    setLoading(true);
+
+    try {
+      // For now, just redirect to signup since waitlist table doesn't exist yet
+      toast({
+        title: "Thanks for your interest!",
+        description: "Sign up now to get started with ChurnFlow.",
+      });
+      navigate('/auth');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,8 +64,8 @@ const CTASection = () => {
                     required
                   />
                 </div>
-                <Button type="submit" variant="hero" size="lg" className="group">
-                  Join Waitlist
+                <Button type="submit" variant="hero" size="lg" className="group" disabled={loading}>
+                  {loading ? 'Getting Started...' : 'Get Started'}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </form>

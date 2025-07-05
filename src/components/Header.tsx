@@ -1,9 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { TrendingDown, Menu, X } from "lucide-react";
+import { TrendingDown, Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
@@ -32,12 +42,26 @@ const Header = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost">
-              Sign In
-            </Button>
-            <Button variant="hero">
-              Get Started
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+                  Dashboard
+                </Button>
+                <Button variant="ghost" onClick={handleSignOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={() => navigate('/auth')}>
+                  Sign In
+                </Button>
+                <Button variant="hero" onClick={() => navigate('/auth')}>
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -63,12 +87,26 @@ const Header = () => {
                 Docs
               </a>
               <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
-                <Button variant="ghost" className="w-full">
-                  Sign In
-                </Button>
-                <Button variant="hero" className="w-full">
-                  Get Started
-                </Button>
+                {user ? (
+                  <>
+                    <Button variant="ghost" className="w-full" onClick={() => navigate('/dashboard')}>
+                      Dashboard
+                    </Button>
+                    <Button variant="ghost" className="w-full" onClick={handleSignOut}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" className="w-full" onClick={() => navigate('/auth')}>
+                      Sign In
+                    </Button>
+                    <Button variant="hero" className="w-full" onClick={() => navigate('/auth')}>
+                      Get Started
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
