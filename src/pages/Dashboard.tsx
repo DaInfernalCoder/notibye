@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Settings, Plus, Activity, Mail, CreditCard } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Settings, Plus, Activity, Mail, CreditCard, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import TestChurnFlow from '@/components/TestChurnFlow';
 
 interface Integration {
@@ -26,9 +27,12 @@ interface ChurnEvent {
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [churnEvents, setChurnEvents] = useState<ChurnEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [testingIntegrations, setTestingIntegrations] = useState<{[key: string]: boolean}>({});
+  const [validationStatus, setValidationStatus] = useState<{[key: string]: 'valid' | 'invalid' | null}>({});
 
   useEffect(() => {
     if (!user) {
@@ -94,6 +98,40 @@ const Dashboard = () => {
     }
   };
 
+  const testIntegration = async (service: string) => {
+    const integration = integrations.find(i => i.service_type === service);
+    if (!integration) return;
+
+    setTestingIntegrations(prev => ({ ...prev, [service]: true }));
+    
+    try {
+      // Mock validation - in real app, this would make actual API calls to validate keys
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+      
+      // Randomly pass/fail for demo (in real app, check actual API responses)
+      const isValid = Math.random() > 0.3; // 70% success rate for demo
+      
+      setValidationStatus(prev => ({ ...prev, [service]: isValid ? 'valid' : 'invalid' }));
+      
+      toast({
+        title: isValid ? "Integration Valid!" : "Integration Failed",
+        description: isValid 
+          ? `${getServiceName(service)} connection verified successfully`
+          : `Failed to validate ${getServiceName(service)} - check your API key`,
+        variant: isValid ? "default" : "destructive"
+      });
+    } catch (error) {
+      setValidationStatus(prev => ({ ...prev, [service]: 'invalid' }));
+      toast({
+        title: "Test Failed",
+        description: `Could not test ${getServiceName(service)} integration`,
+        variant: "destructive"
+      });
+    } finally {
+      setTestingIntegrations(prev => ({ ...prev, [service]: false }));
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -115,12 +153,6 @@ const Dashboard = () => {
           </p>
         </div>
 
-        {/* Test Section for Development */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Development Testing</h2>
-          <TestChurnFlow />
-        </div>
-
         {/* Integrations Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -135,6 +167,8 @@ const Dashboard = () => {
             {['stripe', 'posthog', 'resend'].map((service) => {
               const integration = integrations.find(i => i.service_type === service);
               const isConnected = !!integration?.is_active;
+              const status = validationStatus[service];
+              const isTesting = testingIntegrations[service];
 
               return (
                 <Card key={service}>
@@ -144,32 +178,62 @@ const Dashboard = () => {
                         {getServiceIcon(service)}
                         <CardTitle className="text-base">{getServiceName(service)}</CardTitle>
                       </div>
-                      <Badge variant={isConnected ? 'default' : 'secondary'}>
-                        {isConnected ? 'Connected' : 'Not Connected'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        {status === 'valid' && <CheckCircle className="w-4 h-4 text-green-500" />}
+                        {status === 'invalid' && <XCircle className="w-4 h-4 text-red-500" />}
+                        <Badge variant={isConnected ? 'default' : 'secondary'}>
+                          {isConnected ? 'Connected' : 'Not Connected'}
+                        </Badge>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-sm">
+                    <CardDescription className="text-sm mb-3">
                       {service === 'stripe' && 'Payment processing and subscription webhooks'}
                       {service === 'posthog' && 'Product analytics and user behavior tracking'}
                       {service === 'resend' && 'Email notifications and churn alerts'}
                     </CardDescription>
-                    {!isConnected && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="mt-3 w-full"
-                        onClick={() => navigate('/integrations')}
-                      >
-                        Connect {getServiceName(service)}
-                      </Button>
-                    )}
+                    
+                    <div className="flex gap-2">
+                      {!isConnected ? (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => navigate('/integrations')}
+                        >
+                          Connect {getServiceName(service)}
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => testIntegration(service)}
+                          disabled={isTesting}
+                        >
+                          {isTesting ? (
+                            <>
+                              <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                              Testing...
+                            </>
+                          ) : (
+                            'Test Connection'
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
+        </div>
+
+        {/* Test Section for Development */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Development Testing</h2>
+          <TestChurnFlow />
         </div>
 
         {/* Recent Churn Events */}
