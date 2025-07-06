@@ -16,10 +16,10 @@ const CTASection = () => {
     setLoading(true);
 
     try {
-      toast({
-        title: "Thanks for your interest!",
-        description: "Sign up now to get started with ChurnFlow.",
-      });
+              toast({
+                title: "Thanks for your interest!",
+                description: "Sign up now to get started with notibye.",
+              });
       navigate('/auth');
     } catch (error: any) {
       toast({
@@ -33,15 +33,15 @@ const CTASection = () => {
   };
 
   return (
-    <section className="py-32 bg-secondary/30">
+    <section id="cta" className="py-32 bg-secondary/30">
       <div className="container mx-auto px-6">
         <div className="max-w-2xl mx-auto text-center space-y-12">
           <div className="space-y-6">
             <h2 className="text-4xl lg:text-6xl font-bold">
-              Ready to understand your churn?
+              Ready to prevent churn?
             </h2>
             <p className="text-xl text-muted-foreground">
-              Get started with ChurnFlow and turn your customer data into actionable insights.
+              Start with notibye today and automatically recover revenue from churning customers.
             </p>
           </div>
 

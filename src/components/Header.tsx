@@ -16,24 +16,24 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-background border-b border-border">
+    <header className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50 animate-slide-down">
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center">
-            <span className="text-xl font-semibold text-foreground">ChurnFlow</span>
+            <span className="text-xl font-semibold text-foreground">notibye</span>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-12">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm scroll-smooth">
               Features
             </a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
-              Pricing
+            <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors text-sm scroll-smooth">
+              How it works
             </a>
-            <a href="#docs" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
-              Docs
+            <a href="#cta" className="text-muted-foreground hover:text-foreground transition-colors text-sm scroll-smooth">
+              Get started
             </a>
           </nav>
 
@@ -74,14 +74,14 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-6 border-t border-border">
             <nav className="flex flex-col gap-6">
-              <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+              <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm scroll-smooth">
                 Features
               </a>
-              <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
-                Pricing
+              <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors text-sm scroll-smooth">
+                How it works
               </a>
-              <a href="#docs" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
-                Docs
+              <a href="#cta" className="text-muted-foreground hover:text-foreground transition-colors text-sm scroll-smooth">
+                Get started
               </a>
               <div className="flex flex-col gap-3 pt-6 border-t border-border">
                 {user ? (

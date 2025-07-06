@@ -13,15 +13,15 @@ const HeroSection = () => {
             </div>
             
             <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
-              Your churn insights,{" "}
+              Stop customer churn{" "}
               <span className="underline decoration-primary decoration-4 underline-offset-8">
-                finally meaningful
+                before it happens
               </span>
             </h1>
             
             <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-              ChurnFlow watches your customer behavior so you don't have to. We tell you how people use your product, 
-              and how to get your users to do what you want them to do.
+              notibye automatically detects when customers are about to cancel and sends personalized emails to win them back. 
+              Connect your Stripe and get instant churn prevention that actually works.
             </p>
           </div>
 

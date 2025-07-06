@@ -3,31 +3,31 @@ import { Search, BarChart3, Zap } from "lucide-react";
 const features = [
   {
     icon: Zap,
-    title: "AI-Powered Analysis",
-    description: "Our AI watches every customer interaction, identifying patterns and labeling key moments automatically."
+    title: "Instant Detection",
+    description: "Automatically identify customers at risk of churning through payment patterns and usage data from Stripe."
   },
   {
     icon: Search,
-    title: "Semantic Search",
-    description: "Search for specific user behaviors across thousands of customers using natural language."
+    title: "Smart Targeting",
+    description: "AI analyzes customer behavior to determine the perfect time and message for retention outreach."
   },
   {
     icon: BarChart3,
-    title: "Behavioral KPIs",
-    description: "Transform qualitative user behavior into quantifiable metrics that drive product decisions."
+    title: "Automated Recovery",
+    description: "Send personalized emails automatically when churn risk is detected, recovering revenue while you sleep."
   }
 ];
 
 const FeaturesSection = () => {
   return (
-    <section className="py-32 bg-background">
+    <section id="features" className="py-32 bg-background">
       <div className="container mx-auto px-6">
         <div className="text-center mb-24">
           <h2 className="text-4xl lg:text-6xl font-bold mb-8">
-            Stop watching endless videos
+            Three steps to stop churn
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            ChurnFlow turns your customer data into searchable, quantifiable insights.
+            notibye works behind the scenes to keep your customers happy and subscribed.
           </p>
         </div>
 
