@@ -17,11 +17,12 @@ export function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
+  // DEV MODE: Disable auth requirement
+  // useEffect(() => {
+  //   if (!user) {
+  //     navigate('/auth');
+  //   }
+  // }, [user, navigate]);
 
   const handleSignOut = async () => {
     try {
@@ -43,16 +44,17 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // DEV MODE: Skip auth check
+  // if (!user) {
+  //   return (
+  //     <div className="min-h-screen bg-background flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+  //         <p className="text-muted-foreground">Loading...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <SidebarProvider>
@@ -65,7 +67,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 text-sm">
                 <User className="w-4 h-4" />
-                <span className="text-muted-foreground">{user.email}</span>
+                <span className="text-muted-foreground">{user?.email || 'dev@example.com'}</span>
               </div>
               <Button 
                 variant="ghost" 

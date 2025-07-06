@@ -15,31 +15,31 @@ import {
 const navigationItems = [
   {
     title: 'Dashboard',
-    url: '/dashboard',
+    url: '/app/dashboard',
     icon: Home,
     description: 'Active triggers overview'
   },
   {
     title: 'Integrations',
-    url: '/integrations',
+    url: '/app/integrations',
     icon: Settings,
     description: 'Connect your services'
   },
   {
     title: 'Triggers',
-    url: '/triggers',
+    url: '/app/triggers',
     icon: Zap,
     description: 'Manage churn triggers'
   },
   {
     title: 'Email Templates',
-    url: '/templates',
+    url: '/app/templates',
     icon: Mail,
     description: 'Create email templates'
   },
   {
     title: 'History',
-    url: '/history',
+    url: '/app/history',
     icon: History,
     description: 'View sent emails'
   },
@@ -92,7 +92,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <NavLink to="/triggers/new" className="flex items-center gap-2">
+                  <NavLink to="/app/triggers/new" className="flex items-center gap-2">
                     <Plus className="w-4 h-4" />
                     <span>Create Trigger</span>
                   </NavLink>
@@ -100,7 +100,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <NavLink to="/templates/new" className="flex items-center gap-2">
+                  <NavLink to="/app/templates/new" className="flex items-center gap-2">
                     <Plus className="w-4 h-4" />
                     <span>New Template</span>
                   </NavLink>
