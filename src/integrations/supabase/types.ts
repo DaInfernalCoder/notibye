@@ -42,6 +42,45 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          body_html: string
+          body_text: string | null
+          created_at: string
+          id: string
+          is_visual: boolean | null
+          name: string
+          subject: string
+          updated_at: string
+          user_id: string
+          variables: Json | null
+        }
+        Insert: {
+          body_html: string
+          body_text?: string | null
+          created_at?: string
+          id?: string
+          is_visual?: boolean | null
+          name: string
+          subject: string
+          updated_at?: string
+          user_id: string
+          variables?: Json | null
+        }
+        Update: {
+          body_html?: string
+          body_text?: string | null
+          created_at?: string
+          id?: string
+          is_visual?: boolean | null
+          name?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+          variables?: Json | null
+        }
+        Relationships: []
+      }
       sent_emails: {
         Row: {
           churn_event_id: string | null
@@ -79,6 +118,144 @@ export type Database = {
             columns: ["churn_event_id"]
             isOneToOne: false
             referencedRelation: "churn_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trigger_conditions: {
+        Row: {
+          condition_type: string
+          created_at: string
+          field_name: string | null
+          id: string
+          logical_operator: string | null
+          operator: string
+          order_index: number | null
+          threshold_unit: string | null
+          threshold_value: number | null
+          trigger_id: string
+        }
+        Insert: {
+          condition_type: string
+          created_at?: string
+          field_name?: string | null
+          id?: string
+          logical_operator?: string | null
+          operator: string
+          order_index?: number | null
+          threshold_unit?: string | null
+          threshold_value?: number | null
+          trigger_id: string
+        }
+        Update: {
+          condition_type?: string
+          created_at?: string
+          field_name?: string | null
+          id?: string
+          logical_operator?: string | null
+          operator?: string
+          order_index?: number | null
+          threshold_unit?: string | null
+          threshold_value?: number | null
+          trigger_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trigger_conditions_trigger_id_fkey"
+            columns: ["trigger_id"]
+            isOneToOne: false
+            referencedRelation: "triggers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trigger_executions: {
+        Row: {
+          customer_email: string
+          customer_id: string | null
+          email_sent: boolean | null
+          error_message: string | null
+          executed_at: string
+          execution_data: Json | null
+          id: string
+          trigger_id: string
+        }
+        Insert: {
+          customer_email: string
+          customer_id?: string | null
+          email_sent?: boolean | null
+          error_message?: string | null
+          executed_at?: string
+          execution_data?: Json | null
+          id?: string
+          trigger_id: string
+        }
+        Update: {
+          customer_email?: string
+          customer_id?: string | null
+          email_sent?: boolean | null
+          error_message?: string | null
+          executed_at?: string
+          execution_data?: Json | null
+          id?: string
+          trigger_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trigger_executions_trigger_id_fkey"
+            columns: ["trigger_id"]
+            isOneToOne: false
+            referencedRelation: "triggers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      triggers: {
+        Row: {
+          created_at: string
+          description: string | null
+          email_template_id: string | null
+          frequency_type: string
+          frequency_value: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+          warning_acknowledged: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          email_template_id?: string | null
+          frequency_type: string
+          frequency_value?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+          warning_acknowledged?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          email_template_id?: string | null
+          frequency_type?: string
+          frequency_value?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+          warning_acknowledged?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "triggers_email_template_id_fkey"
+            columns: ["email_template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
             referencedColumns: ["id"]
           },
         ]
