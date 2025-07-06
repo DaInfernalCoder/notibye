@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, Plus, Activity, Mail, CreditCard, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import TestChurnFlow from '@/components/TestChurnFlow';
+import OnboardingTour from '@/components/OnboardingTour';
 
 interface Integration {
   id: string;
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [testingIntegrations, setTestingIntegrations] = useState<{[key: string]: boolean}>({});
   const [validationStatus, setValidationStatus] = useState<{[key: string]: 'valid' | 'invalid' | null}>({});
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -41,7 +43,21 @@ const Dashboard = () => {
     }
 
     fetchData();
+    checkIfShouldShowOnboarding();
   }, [user, navigate]);
+
+  const checkIfShouldShowOnboarding = () => {
+    // Show onboarding if user has no integrations or if they haven't seen it yet
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+  };
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('hasSeenOnboarding', 'true');
+  };
 
   const fetchData = async () => {
     try {
@@ -154,7 +170,7 @@ const Dashboard = () => {
         </div>
 
         {/* Integrations Section */}
-        <div className="mb-8">
+        <div className="mb-8" data-tour="integrations">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Service Integrations</h2>
             <Button onClick={() => navigate('/integrations')} size="sm">
@@ -164,14 +180,14 @@ const Dashboard = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {['stripe', 'posthog', 'resend'].map((service) => {
+            {['stripe', 'posthog', 'resend'].map((service, index) => {
               const integration = integrations.find(i => i.service_type === service);
               const isConnected = !!integration?.is_active;
               const status = validationStatus[service];
               const isTesting = testingIntegrations[service];
 
               return (
-                <Card key={service}>
+                <Card key={service} data-tour={index === 0 ? "integration-card" : undefined}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -231,13 +247,13 @@ const Dashboard = () => {
         </div>
 
         {/* Test Section for Development */}
-        <div className="mb-8">
+        <div className="mb-8" data-tour="test-section">
           <h2 className="text-xl font-semibold mb-4">Development Testing</h2>
           <TestChurnFlow />
         </div>
 
         {/* Recent Churn Events */}
-        <div>
+        <div data-tour="churn-events">
           <h2 className="text-xl font-semibold mb-4">Recent Churn Events</h2>
           
           {churnEvents.length === 0 ? (
@@ -276,6 +292,11 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+      
+      {/* Onboarding Tour */}
+      {showOnboarding && (
+        <OnboardingTour onComplete={handleOnboardingComplete} />
+      )}
     </div>
   );
 };
