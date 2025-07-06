@@ -199,18 +199,41 @@ const TemplateCreate = () => {
    * Submit the template
    */
   const handleSubmit = async () => {
-    if (!user) {
+    console.log('🔥 TEMPLATE CREATION STARTED');
+    console.log('User:', user);
+    console.log('Form data:', formData);
+
+    // Check Supabase auth session directly
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    console.log('🔐 Supabase session:', { session, sessionError });
+
+    if (!user && !session?.user) {
+      console.error('❌ No user found during submission');
       debug.logError('No user found during submission', null, { context: 'handleSubmit' });
       toast({
-        title: "Authentication Error",
-        description: "You must be logged in to create templates",
+        title: "Authentication Error", 
+        description: "You must be logged in to create templates. Please sign in first.",
         variant: "destructive"
       });
+      navigate('/auth');
+      return;
+    }
+
+    const authUserId = user?.id || session?.user?.id;
+    if (!authUserId) {
+      console.error('❌ No user ID available');
+      toast({
+        title: "Authentication Error",
+        description: "Unable to determine user identity. Please sign in again.",
+        variant: "destructive"
+      });
+      navigate('/auth');
       return;
     }
 
     // Validation
     if (!formData.name.trim() || !formData.subject.trim() || !formData.body_text.trim()) {
+      console.error('❌ Form validation failed');
       debug.logWarning('Form validation failed', { 
         name: !!formData.name.trim(),
         subject: !!formData.subject.trim(),
@@ -230,16 +253,30 @@ const TemplateCreate = () => {
 
     try {
       const templateData = {
-        user_id: user.id,
+        user_id: authUserId,
         name: formData.name.trim(),
         subject: formData.subject.trim(),
         body_text: formData.body_text.trim(),
-        body_html: formData.is_visual ? formData.body_html : formData.body_text.trim(),
+        body_html: formData.is_visual ? formData.body_html.trim() : formData.body_text.trim(),
         is_visual: formData.is_visual,
         variables: formData.variables,
       };
 
+      console.log('📤 Attempting to insert template data:', templateData);
       debug.log('Submitting template data', templateData);
+
+      // Test Supabase connection first
+      const { data: testData, error: testError } = await supabase
+        .from('email_templates')
+        .select('count(*)')
+        .limit(1);
+      
+      if (testError) {
+        console.error('❌ Supabase connection test failed:', testError);
+        throw new Error(`Database connection failed: ${testError.message}`);
+      }
+
+      console.log('✅ Supabase connection test passed');
 
       // Use direct Supabase call instead of hook for better error handling
       const { data, error } = await supabase
@@ -248,11 +285,28 @@ const TemplateCreate = () => {
         .select()
         .single();
 
+      console.log('🏠 Database response:', { data, error });
+
       if (error) {
+        console.error('❌ Database error during template creation:', error);
         debug.logError('Database error during template creation', error);
-        throw error;
+        
+        // More specific error handling
+        if (error.code === '23505') {
+          throw new Error('A template with this name already exists');
+        } else if (error.code === '42501') {
+          throw new Error('Permission denied. Please check your authentication');
+        } else {
+          throw new Error(`Database error: ${error.message} (Code: ${error.code})`);
+        }
       }
 
+      if (!data) {
+        console.error('❌ No data returned from insert');
+        throw new Error('No data returned from database insert');
+      }
+
+      console.log('✅ Template created successfully:', data);
       debug.logSuccess('Template created successfully', { templateId: data.id });
       
       toast({
@@ -262,11 +316,21 @@ const TemplateCreate = () => {
 
       navigate('/app/templates');
       
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ Template creation failed:', error);
       debug.logError('Template creation failed', error);
+      
+      const errorMessage = error?.message || 'Unknown error occurred';
+      console.error('Error details:', { 
+        message: errorMessage, 
+        error,
+        user: user?.id,
+        formValid: !!(formData.name.trim() && formData.subject.trim() && formData.body_text.trim())
+      });
+      
       toast({
         title: "Error",
-        description: "Failed to create template. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
