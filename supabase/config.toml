@@ -1,1 +1,7 @@
 project_id = "celmmsdzizebswawmdee"
+
+[functions.process-triggers]
+verify_jwt = true
+
+[functions.send-churn-email]
+verify_jwt = true
