@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useDebug } from '@/hooks/useDebug';
-import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   ArrowLeft, 
   Mail, 
@@ -94,7 +94,6 @@ const TemplateCreate = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const debug = useDebug({ component: 'TemplateCreate' });
-  const { insertRecord } = useSupabaseQuery('TemplateCreate');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -242,18 +241,34 @@ const TemplateCreate = () => {
 
       debug.log('Submitting template data', templateData);
 
-      const result = await insertRecord('email_templates', templateData, {
-        successMessage: `Template "${formData.name}" created successfully!`,
-        errorMessage: `Failed to create template "${formData.name}"`
+      // Use direct Supabase call instead of hook for better error handling
+      const { data, error } = await supabase
+        .from('email_templates')
+        .insert([templateData])
+        .select()
+        .single();
+
+      if (error) {
+        debug.logError('Database error during template creation', error);
+        throw error;
+      }
+
+      debug.logSuccess('Template created successfully', { templateId: data.id });
+      
+      toast({
+        title: "Template Created",
+        description: `"${formData.name}" has been created successfully!`
       });
 
-      if (result) {
-        debug.logSuccess('Template created successfully', { templateId: result.id });
-        navigate('/app/templates');
-      }
+      navigate('/app/templates');
       
     } catch (error) {
       debug.logError('Template creation failed', error);
+      toast({
+        title: "Error",
+        description: "Failed to create template. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
