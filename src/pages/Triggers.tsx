@@ -1,13 +1,27 @@
+/**
+ * Triggers Page
+ * 
+ * Main page for managing churn prevention triggers. Displays all user triggers
+ * in a list layout with options to create, edit, delete, and toggle active state.
+ */
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
+import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Zap, Clock, AlertTriangle, Edit, Trash2 } from 'lucide-react';
+import { useDebug } from '@/hooks/useDebug';
+import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
+import { TriggerCard } from '@/components/triggers/TriggerCard';
+import { Plus, Zap } from 'lucide-react';
+
+interface TriggerCondition {
+  condition_type: string;
+  operator: string;
+  threshold_value: number;
+  threshold_unit: string;
+}
 
 interface Trigger {
   id: string;
@@ -21,111 +35,158 @@ interface Trigger {
   email_templates: {
     name: string;
   } | null;
-  trigger_conditions: Array<{
-    condition_type: string;
-    operator: string;
-    threshold_value: number;
-    threshold_unit: string;
-  }>;
+  trigger_conditions: TriggerCondition[];
 }
 
 const Triggers = () => {
+  console.log('⚡ Triggers: Component initializing');
+  
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const debug = useDebug({ component: 'Triggers' });
+  const { executeQuery, updateRecord, loading } = useSupabaseQuery('Triggers');
+  
   const [triggers, setTriggers] = useState<Trigger[]>([]);
-  const [loading, setLoading] = useState(true);
 
+  debug.log('Triggers page rendered', { 
+    userId: user?.id, 
+    triggerCount: triggers.length,
+    loading 
+  });
+
+  /**
+   * Fetch all triggers for the current user with related data
+   */
   useEffect(() => {
-    fetchTriggers();
+    if (user) {
+      debug.logEntry('fetchTriggers', { userId: user.id });
+      fetchTriggers();
+    }
   }, [user]);
 
   const fetchTriggers = async () => {
-    if (!user) return;
+    if (!user) {
+      debug.logWarning('Attempted to fetch triggers without user');
+      return;
+    }
 
     try {
-      const { data: triggersData, error } = await supabase
-        .from('triggers')
-        .select(`
-          *,
-          email_templates!triggers_email_template_id_fkey (name),
-          trigger_conditions (*)
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setTriggers(triggersData || []);
-    } catch (error) {
-      console.error('Error fetching triggers:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load triggers",
-        variant: "destructive"
+      const data = await executeQuery(async () => {
+        // Import supabase directly since the hook doesn't support complex joins yet
+        const { supabase } = await import('@/integrations/supabase/client');
+        
+        return supabase
+          .from('triggers')
+          .select(`
+            *,
+            email_templates!triggers_email_template_id_fkey (name),
+            trigger_conditions (*)
+          `)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+      }, {
+        errorMessage: 'Failed to load triggers',
+        showErrorToast: true
       });
-    } finally {
-      setLoading(false);
+
+      if (data) {
+        debug.logSuccess(`Loaded ${data.length} triggers`, { triggerCount: data.length });
+        setTriggers(data);
+      }
+    } catch (error) {
+      debug.logError('Failed to fetch triggers', error);
     }
   };
 
-  const toggleTrigger = async (triggerId: string, isActive: boolean) => {
+  /**
+   * Toggle trigger active/inactive state
+   */
+  const handleToggle = async (triggerId: string, isActive: boolean) => {
+    debug.logEntry('handleToggle', { triggerId, isActive });
+    
     try {
-      const { error } = await supabase
-        .from('triggers')
-        .update({ is_active: isActive })
-        .eq('id', triggerId);
-
-      if (error) throw error;
-
-      setTriggers(prev => prev.map(trigger => 
-        trigger.id === triggerId ? { ...trigger, is_active: isActive } : trigger
-      ));
-
-      toast({
-        title: isActive ? "Trigger activated" : "Trigger deactivated",
-        description: `Your trigger has been ${isActive ? 'activated' : 'deactivated'}.`
+      const result = await updateRecord('triggers', triggerId, { is_active: isActive }, {
+        successMessage: `Trigger ${isActive ? 'activated' : 'deactivated'} successfully`,
+        errorMessage: 'Failed to update trigger'
       });
+
+      if (result) {
+        // Update local state
+        setTriggers(prev => prev.map(trigger => 
+          trigger.id === triggerId ? { ...trigger, is_active: isActive } : trigger
+        ));
+        
+        debug.logSuccess('Trigger toggled successfully', { triggerId, isActive });
+      }
     } catch (error) {
-      console.error('Error updating trigger:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update trigger",
-        variant: "destructive"
+      debug.logError('Failed to toggle trigger', error, { triggerId, isActive });
+    }
+  };
+
+  /**
+   * Handle trigger editing - navigate to edit page
+   */
+  const handleEdit = (trigger: Trigger) => {
+    debug.logEntry('handleEdit', { triggerId: trigger.id, triggerName: trigger.name });
+    
+    // TODO: Implement trigger editing
+    toast({
+      title: "Feature Coming Soon",
+      description: "Trigger editing is under development",
+      variant: "default"
+    });
+    
+    debug.log('Edit trigger clicked (not implemented)', { triggerId: trigger.id });
+  };
+
+  /**
+   * Handle trigger deletion with confirmation
+   */
+  const handleDelete = async (triggerId: string) => {
+    debug.logEntry('handleDelete', { triggerId });
+    
+    const trigger = triggers.find(t => t.id === triggerId);
+    if (!trigger) {
+      debug.logError('Trigger not found for deletion', null, { triggerId });
+      return;
+    }
+
+    try {
+      // Import deleteRecord method or use executeQuery directly
+      const success = await executeQuery(async () => {
+        const { supabase } = await import('@/integrations/supabase/client');
+        return supabase
+          .from('triggers')
+          .delete()
+          .eq('id', triggerId);
+      }, {
+        successMessage: `"${trigger.name}" has been deleted successfully`,
+        errorMessage: `Failed to delete "${trigger.name}"`,
+        showSuccessToast: true
       });
+
+      if (success !== null) {
+        // Remove from local state
+        setTriggers(prev => prev.filter(t => t.id !== triggerId));
+        debug.logSuccess('Trigger deleted successfully', { triggerId, triggerName: trigger.name });
+      }
+    } catch (error) {
+      debug.logError('Failed to delete trigger', error, { triggerId });
     }
   };
 
-  const getFrequencyDisplay = (type: string, value: string) => {
-    switch (type) {
-      case 'realtime':
-        return 'Real-time';
-      case 'hourly':
-        return 'Every hour';
-      case 'daily':
-        return 'Daily';
-      case 'weekly':
-        return 'Weekly';
-      case 'custom':
-        return `Custom: ${value}`;
-      default:
-        return type;
-    }
+  /**
+   * Navigate to create trigger page
+   */
+  const handleCreateTrigger = () => {
+    debug.logEntry('handleCreateTrigger');
+    navigate('/app/triggers/new');
   };
 
-  const getConditionSummary = (conditions: Trigger['trigger_conditions']) => {
-    if (!conditions.length) return 'No conditions';
-    
-    const firstCondition = conditions[0];
-    const summary = `${firstCondition.condition_type} ${firstCondition.operator} ${firstCondition.threshold_value}${firstCondition.threshold_unit}`;
-    
-    if (conditions.length > 1) {
-      return `${summary} +${conditions.length - 1} more`;
-    }
-    
-    return summary;
-  };
-
+  // Loading state
   if (loading) {
+    debug.log('Showing loading state');
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
@@ -138,6 +199,7 @@ const Triggers = () => {
 
   return (
     <div className="space-y-6">
+      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Triggers</h1>
@@ -145,12 +207,13 @@ const Triggers = () => {
             Manage your churn prevention triggers
           </p>
         </div>
-        <Button onClick={() => navigate('/triggers/new')}>
+        <Button onClick={handleCreateTrigger}>
           <Plus className="w-4 h-4 mr-2" />
           Create Trigger
         </Button>
       </div>
 
+      {/* Triggers List or Empty State */}
       {triggers.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
@@ -159,7 +222,7 @@ const Triggers = () => {
             <p className="text-muted-foreground mb-4">
               Create your first trigger to start preventing customer churn.
             </p>
-            <Button onClick={() => navigate('/triggers/new')}>
+            <Button onClick={handleCreateTrigger}>
               <Plus className="w-4 h-4 mr-2" />
               Create Your First Trigger
             </Button>
@@ -168,59 +231,13 @@ const Triggers = () => {
       ) : (
         <div className="space-y-4">
           {triggers.map((trigger) => (
-            <Card key={trigger.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="flex items-center gap-2">
-                      {trigger.name}
-                      {!trigger.warning_acknowledged && (
-                        <AlertTriangle className="w-4 h-4 text-amber-500" />
-                      )}
-                    </CardTitle>
-                    <CardDescription>{trigger.description}</CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={trigger.is_active}
-                      onCheckedChange={(checked) => toggleTrigger(trigger.id, checked)}
-                    />
-                    <Badge variant={trigger.is_active ? 'default' : 'secondary'}>
-                      {trigger.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {getFrequencyDisplay(trigger.frequency_type, trigger.frequency_value)}
-                    </div>
-                    <div>
-                      Template: {trigger.email_templates?.name || 'None'}
-                    </div>
-                  </div>
-                  
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Conditions: </span>
-                    {getConditionSummary(trigger.trigger_conditions)}
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-2">
-                    <Button variant="outline" size="sm">
-                      <Edit className="w-3 h-3 mr-1" />
-                      Edit
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <TriggerCard
+              key={trigger.id}
+              trigger={trigger}
+              onToggle={handleToggle}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}

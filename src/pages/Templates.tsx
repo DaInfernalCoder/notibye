@@ -1,12 +1,20 @@
+/**
+ * Templates Page
+ * 
+ * Main page for managing email templates. Displays all user templates
+ * in a grid layout with options to create, preview, edit, and delete.
+ */
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Mail, Eye, Edit, Trash2, Code, Palette } from 'lucide-react';
+import { useDebug } from '@/hooks/useDebug';
+import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
+import { TemplateCard } from '@/components/templates/TemplateCard';
+import { Plus, Mail } from 'lucide-react';
 
 interface EmailTemplate {
   id: string;
@@ -14,80 +22,153 @@ interface EmailTemplate {
   subject: string;
   body_html: string;
   body_text: string;
-  variables: any;
+  variables: string[];
   is_visual: boolean;
   created_at: string;
   updated_at: string;
 }
 
 const Templates = () => {
+  console.log('📧 Templates: Component initializing');
+  
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const debug = useDebug({ component: 'Templates' });
+  const { fetchUserRecords, deleteRecord, loading } = useSupabaseQuery('Templates');
+  
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
 
+  debug.log('Templates page rendered', { 
+    userId: user?.id, 
+    templateCount: templates.length,
+    loading 
+  });
+
+  /**
+   * Fetch all templates for the current user
+   */
   useEffect(() => {
-    fetchTemplates();
+    if (user) {
+      debug.logEntry('fetchTemplates', { userId: user.id });
+      fetchTemplates();
+    }
   }, [user]);
 
   const fetchTemplates = async () => {
-    if (!user) return;
+    if (!user) {
+      debug.logWarning('Attempted to fetch templates without user');
+      return;
+    }
 
     try {
-      const { data, error } = await supabase
-        .from('email_templates')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
+      const data = await fetchUserRecords<EmailTemplate>(
+        'email_templates',
+        user.id,
+        {
+          orderBy: { column: 'updated_at', ascending: false }
+        }
+      );
 
-      if (error) throw error;
-      setTemplates(data || []);
+      if (data) {
+        debug.logSuccess(`Loaded ${data.length} templates`, { templateCount: data.length });
+        setTemplates(data);
+      }
     } catch (error) {
-      console.error('Error fetching templates:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load email templates",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
+      debug.logError('Failed to fetch templates', error);
     }
   };
 
-  const deleteTemplate = async (templateId: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+  /**
+   * Handle template preview - shows template content with sample data
+   */
+  const handlePreview = (template: EmailTemplate) => {
+    debug.logEntry('handlePreview', { templateId: template.id, templateName: template.name });
+    
+    // Generate sample data for preview
+    const sampleData = {
+      customer_name: 'John Smith',
+      customer_email: 'john@example.com',
+      usage_data: '25 events this week',
+      engagement_score: '78%',
+      last_seen: '2 days ago',
+      company_name: 'Acme Corp',
+      most_used_feature: 'Analytics Dashboard',
+      total_events: '1,234',
+      active_days: '15',
+    };
+
+    // Replace variables in subject and content
+    let previewSubject = template.subject;
+    let previewContent = template.body_text || template.body_html.replace(/<[^>]*>/g, '');
+    
+    Object.entries(sampleData).forEach(([key, value]) => {
+      const regex = new RegExp(`{${key}}`, 'g');
+      previewSubject = previewSubject.replace(regex, value);
+      previewContent = previewContent.replace(regex, value);
+    });
+
+    // Show preview in alert (TODO: Replace with proper modal)
+    alert(`Subject: ${previewSubject}\n\nContent:\n${previewContent}`);
+    
+    debug.log('Template preview displayed', { templateId: template.id });
+  };
+
+  /**
+   * Handle template editing - navigate to edit page
+   */
+  const handleEdit = (template: EmailTemplate) => {
+    debug.logEntry('handleEdit', { templateId: template.id, templateName: template.name });
+    
+    // TODO: Implement template editing
+    toast({
+      title: "Feature Coming Soon",
+      description: "Template editing is under development",
+      variant: "default"
+    });
+    
+    debug.log('Edit template clicked (not implemented)', { templateId: template.id });
+  };
+
+  /**
+   * Handle template deletion with confirmation
+   */
+  const handleDelete = async (templateId: string) => {
+    debug.logEntry('handleDelete', { templateId });
+    
+    const template = templates.find(t => t.id === templateId);
+    if (!template) {
+      debug.logError('Template not found for deletion', null, { templateId });
+      return;
+    }
 
     try {
-      const { error } = await supabase
-        .from('email_templates')
-        .delete()
-        .eq('id', templateId);
-
-      if (error) throw error;
-
-      setTemplates(prev => prev.filter(template => template.id !== templateId));
-      toast({
-        title: "Template deleted",
-        description: "Email template has been deleted successfully."
+      const success = await deleteRecord('email_templates', templateId, {
+        successMessage: `"${template.name}" has been deleted successfully`,
+        errorMessage: `Failed to delete "${template.name}"`
       });
+
+      if (success) {
+        // Remove from local state
+        setTemplates(prev => prev.filter(t => t.id !== templateId));
+        debug.logSuccess('Template deleted successfully', { templateId, templateName: template.name });
+      }
     } catch (error) {
-      console.error('Error deleting template:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete template",
-        variant: "destructive"
-      });
+      debug.logError('Failed to delete template', error, { templateId });
     }
   };
 
-  const previewTemplate = (template: EmailTemplate) => {
-    // For now, just show an alert with the content
-    // In a real implementation, this would open a modal or new page
-    alert(`Subject: ${template.subject}\n\nContent: ${template.body_text || template.body_html.replace(/<[^>]*>/g, '')}`);
+  /**
+   * Navigate to create template page
+   */
+  const handleCreateTemplate = () => {
+    debug.logEntry('handleCreateTemplate');
+    navigate('/app/templates/new');
   };
 
+  // Loading state
   if (loading) {
+    debug.log('Showing loading state');
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
@@ -100,6 +181,7 @@ const Templates = () => {
 
   return (
     <div className="space-y-6">
+      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Email Templates</h1>
@@ -107,12 +189,13 @@ const Templates = () => {
             Create and manage your email templates with dynamic variables
           </p>
         </div>
-        <Button onClick={() => navigate('/templates/new')}>
+        <Button onClick={handleCreateTemplate}>
           <Plus className="w-4 h-4 mr-2" />
           Create Template
         </Button>
       </div>
 
+      {/* Templates Grid or Empty State */}
       {templates.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
@@ -121,7 +204,7 @@ const Templates = () => {
             <p className="text-muted-foreground mb-4">
               Create your first email template to use in your triggers.
             </p>
-            <Button onClick={() => navigate('/templates/new')}>
+            <Button onClick={handleCreateTemplate}>
               <Plus className="w-4 h-4 mr-2" />
               Create Your First Template
             </Button>
@@ -130,77 +213,13 @@ const Templates = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {templates.map((template) => (
-            <Card key={template.id} className="h-fit">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <CardTitle className="text-lg">{template.name}</CardTitle>
-                    <CardDescription className="text-sm">
-                      {template.subject}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Badge variant={template.is_visual ? 'default' : 'secondary'} className="text-xs">
-                      {template.is_visual ? (
-                        <>
-                          <Palette className="w-3 h-3 mr-1" />
-                          Visual
-                        </>
-                      ) : (
-                        <>
-                          <Code className="w-3 h-3 mr-1" />
-                          Text
-                        </>
-                      )}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {template.variables && template.variables.length > 0 && (
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">Variables: </span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {template.variables.map((variable, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {`{${variable}}`}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="text-xs text-muted-foreground">
-                    Updated {new Date(template.updated_at).toLocaleDateString()}
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => previewTemplate(template)}
-                    >
-                      <Eye className="w-3 h-3 mr-1" />
-                      Preview
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Edit className="w-3 h-3 mr-1" />
-                      Edit
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => deleteTemplate(template.id)}
-                    >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <TemplateCard
+              key={template.id}
+              template={template}
+              onPreview={handlePreview}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
