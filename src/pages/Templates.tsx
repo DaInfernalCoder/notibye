@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDebug } from '@/hooks/useDebug';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import { TemplateCard } from '@/components/templates/TemplateCard';
+import { TemplatePreviewModal } from '@/components/templates/TemplatePreviewModal';
 import { Plus, Mail } from 'lucide-react';
 
 interface EmailTemplate {
@@ -79,39 +80,14 @@ const Templates = () => {
     }
   };
 
+  const [previewTemplate, setPreviewTemplate] = useState<EmailTemplate | null>(null);
+
   /**
-   * Handle template preview - shows template content with sample data
+   * Handle template preview - shows template content with professional modal
    */
   const handlePreview = (template: EmailTemplate) => {
     debug.logEntry('handlePreview', { templateId: template.id, templateName: template.name });
-    
-    // Generate sample data for preview
-    const sampleData = {
-      customer_name: 'John Smith',
-      customer_email: 'john@example.com',
-      usage_data: '25 events this week',
-      engagement_score: '78%',
-      last_seen: '2 days ago',
-      company_name: 'Acme Corp',
-      most_used_feature: 'Analytics Dashboard',
-      total_events: '1,234',
-      active_days: '15',
-    };
-
-    // Replace variables in subject and content
-    let previewSubject = template.subject;
-    let previewContent = template.body_text || template.body_html.replace(/<[^>]*>/g, '');
-    
-    Object.entries(sampleData).forEach(([key, value]) => {
-      const regex = new RegExp(`{${key}}`, 'g');
-      previewSubject = previewSubject.replace(regex, value);
-      previewContent = previewContent.replace(regex, value);
-    });
-
-    // Show preview in alert (TODO: Replace with proper modal)
-    alert(`Subject: ${previewSubject}\n\nContent:\n${previewContent}`);
-    
-    debug.log('Template preview displayed', { templateId: template.id });
+    setPreviewTemplate(template);
   };
 
   /**
@@ -223,6 +199,19 @@ const Templates = () => {
           ))}
         </div>
       )}
+
+      {/* Preview Modal */}
+      <TemplatePreviewModal
+        template={previewTemplate}
+        isOpen={!!previewTemplate}
+        onClose={() => setPreviewTemplate(null)}
+        onSendTest={() => {
+          toast({
+            title: "Feature Coming Soon",
+            description: "Test email sending is under development"
+          });
+        }}
+      />
     </div>
   );
 };

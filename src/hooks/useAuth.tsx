@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (DEV_MODE) {
       // Create a mock user for development
       const mockUser = {
-        id: 'dev-user-123',
+        id: '123e4567-e89b-12d3-a456-426614174000', // Valid UUID format
         email: 'dev@churnflow.com', 
         created_at: new Date().toISOString(),
         app_metadata: {},
