@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useDebug } from '@/hooks/useDebug';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
+import CustomerInsights from '@/components/analytics/CustomerInsights';
 import { TriggerCard } from '@/components/triggers/TriggerCard';
 import { Plus, Zap } from 'lucide-react';
 
@@ -200,20 +201,23 @@ const Triggers = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Triggers</h1>
-          <p className="text-muted-foreground">
-            Manage your churn prevention triggers
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Triggers</h1>
+            <p className="text-muted-foreground">
+              Manage your churn prevention triggers
+            </p>
+          </div>
+          <Button onClick={handleCreateTrigger}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Trigger
+          </Button>
         </div>
-        <Button onClick={handleCreateTrigger}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Trigger
-        </Button>
-      </div>
 
-      {/* Triggers List or Empty State */}
+        {/* Customer Analytics Insights */}
+        <CustomerInsights />
+
+        {/* Triggers List or Empty State */}
       {triggers.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">

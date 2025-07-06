@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Zap, Activity, TrendingUp, TrendingDown, Clock, AlertTriangle } from 'lucide-react';
+import { Plus, Zap, Activity, TrendingUp, TrendingDown, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface DashboardStats {
   activeTriggers: number;
@@ -38,6 +38,7 @@ const Dashboard = () => {
   });
   const [recentTriggers, setRecentTriggers] = useState<RecentTrigger[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncingPostHog, setSyncingPostHog] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -96,6 +97,36 @@ const Dashboard = () => {
     }
   };
 
+  const syncPostHogData = async () => {
+    if (!user) return;
+    
+    setSyncingPostHog(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-posthog-data', {
+        body: { user_id: user.id, days_back: 30 }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "PostHog Data Synced!",
+        description: `Processed ${data.records_processed} customer records`,
+      });
+
+      // Refresh dashboard data
+      await fetchDashboardData();
+    } catch (error: any) {
+      console.error('PostHog sync error:', error);
+      toast({
+        title: "Sync Failed",
+        description: error.message || "Failed to sync PostHog data",
+        variant: "destructive",
+      });
+    } finally {
+      setSyncingPostHog(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -116,10 +147,29 @@ const Dashboard = () => {
             Monitor your churn prevention triggers and performance
           </p>
         </div>
-        <Button onClick={() => navigate('/triggers/new')}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Trigger
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            onClick={syncPostHogData} 
+            variant="outline"
+            disabled={syncingPostHog}
+          >
+            {syncingPostHog ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Syncing...
+              </>
+            ) : (
+              <>
+                <Activity className="w-4 h-4 mr-2" />
+                Sync PostHog
+              </>
+            )}
+          </Button>
+          <Button onClick={() => navigate('/app/triggers/new')}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Trigger
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
