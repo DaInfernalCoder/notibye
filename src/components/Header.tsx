@@ -1,18 +1,77 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, Code } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/');
+  };
+
+  const handleDevAuth = async () => {
+    const password = prompt("Enter dev password:");
+    if (password === "A16") {
+      try {
+        // Try to sign in first, if not exists, create the user
+        let { data, error } = await supabase.auth.signInWithPassword({
+          email: 'dev@test.com',
+          password: 'devpassword123'
+        });
+
+        if (error && error.message.includes('Invalid login')) {
+          // User doesn't exist, create it
+          const { error: signUpError } = await supabase.auth.signUp({
+            email: 'dev@test.com',
+            password: 'devpassword123',
+            options: {
+              emailRedirectTo: `${window.location.origin}/`
+            }
+          });
+          
+          if (signUpError) {
+            throw signUpError;
+          }
+
+          // Sign in after creating
+          ({ data, error } = await supabase.auth.signInWithPassword({
+            email: 'dev@test.com',
+            password: 'devpassword123'
+          }));
+        }
+
+        if (error) {
+          throw error;
+        }
+
+        toast({
+          title: "Dev Mode Activated",
+          description: "You're now signed in as dev user"
+        });
+
+        navigate('/app/dashboard');
+      } catch (error: any) {
+        toast({
+          title: "Dev Auth Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
+    } else if (password !== null) {
+      toast({
+        title: "Access Denied",
+        description: "Wrong password",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -51,8 +110,9 @@ const Header = () => {
               </>
             ) : (
               <>
-                <Button variant="clean" onClick={() => navigate('/auth')}>
-                  Log in
+                <Button variant="clean" onClick={handleDevAuth}>
+                  <Code className="w-4 h-4 mr-2" />
+                  Dev
                 </Button>
                 <Button variant="hero" onClick={() => navigate('/auth')}>
                   Start Now →
@@ -96,8 +156,9 @@ const Header = () => {
                   </>
                 ) : (
                   <>
-                    <Button variant="clean" className="w-full" onClick={() => navigate('/auth')}>
-                      Log in
+                    <Button variant="clean" className="w-full" onClick={handleDevAuth}>
+                      <Code className="w-4 h-4 mr-2" />
+                      Dev
                     </Button>
                     <Button variant="hero" className="w-full" onClick={() => navigate('/auth')}>
                       Start Now →
