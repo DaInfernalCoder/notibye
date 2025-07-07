@@ -21,47 +21,50 @@ const Header = () => {
     const password = prompt("Enter dev password:");
     if (password === "A16") {
       try {
-        // Try to sign in first, if not exists, create the user
-        let { data, error } = await supabase.auth.signInWithPassword({
-          email: 'dev@test.com',
-          password: 'devpassword123'
+        // Generate a unique dev email to avoid conflicts
+        const timestamp = Date.now();
+        const devEmail = `devuser${timestamp}@example.com`;
+        const devPassword = 'DevPassword123!';
+
+        // Create the dev user
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: devEmail,
+          password: devPassword,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: 'Dev User',
+              first_name: 'Dev',
+              last_name: 'User'
+            }
+          }
         });
 
-        if (error && error.message.includes('Invalid login')) {
-          // User doesn't exist, create it
-          const { error: signUpError } = await supabase.auth.signUp({
-            email: 'dev@test.com',
-            password: 'devpassword123',
-            options: {
-              emailRedirectTo: `${window.location.origin}/`
-            }
-          });
-          
-          if (signUpError) {
-            throw signUpError;
-          }
-
-          // Sign in after creating
-          ({ data, error } = await supabase.auth.signInWithPassword({
-            email: 'dev@test.com',
-            password: 'devpassword123'
-          }));
+        if (signUpError) {
+          throw signUpError;
         }
 
-        if (error) {
-          throw error;
+        // Sign in the user immediately
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: devEmail,
+          password: devPassword
+        });
+
+        if (signInError) {
+          throw signInError;
         }
 
         toast({
           title: "Dev Mode Activated",
-          description: "You're now signed in as dev user"
+          description: `Signed in as ${devEmail}`
         });
 
         navigate('/app/dashboard');
       } catch (error: any) {
+        console.error('Dev auth error:', error);
         toast({
           title: "Dev Auth Failed",
-          description: error.message,
+          description: error.message || "Failed to create dev user",
           variant: "destructive"
         });
       }
@@ -111,6 +114,10 @@ const Header = () => {
               </>
             ) : (
               <>
+                <Button variant="clean" onClick={handleDevAuth}>
+                  <Code className="w-4 h-4 mr-2" />
+                  Dev
+                </Button>
                 <Button variant="clean" onClick={() => navigate('/auth')}>
                   Log in
                 </Button>
@@ -157,6 +164,10 @@ const Header = () => {
                   </>
                 ) : (
                   <>
+                    <Button variant="clean" className="w-full" onClick={handleDevAuth}>
+                      <Code className="w-4 h-4 mr-2" />
+                      Dev
+                    </Button>
                     <Button variant="clean" className="w-full" onClick={() => navigate('/auth')}>
                       Log in
                     </Button>
