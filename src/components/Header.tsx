@@ -100,8 +100,9 @@ const Header = () => {
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
-                <Button variant="clean" onClick={() => navigate('/dashboard')}>
-                  Dashboard
+                <Button variant="clean" onClick={handleDevAuth}>
+                  <Code className="w-4 h-4 mr-2" />
+                  Dev
                 </Button>
                 <Button variant="clean" onClick={handleSignOut}>
                   <LogOut className="w-4 h-4 mr-2" />
@@ -110,9 +111,8 @@ const Header = () => {
               </>
             ) : (
               <>
-                <Button variant="clean" onClick={handleDevAuth}>
-                  <Code className="w-4 h-4 mr-2" />
-                  Dev
+                <Button variant="clean" onClick={() => navigate('/auth')}>
+                  Log in
                 </Button>
                 <Button variant="hero" onClick={() => navigate('/auth')}>
                   Start Now →
@@ -146,8 +146,9 @@ const Header = () => {
               <div className="flex flex-col gap-3 pt-6 border-t border-border">
                 {user ? (
                   <>
-                    <Button variant="clean" className="w-full" onClick={() => navigate('/dashboard')}>
-                      Dashboard
+                    <Button variant="clean" className="w-full" onClick={handleDevAuth}>
+                      <Code className="w-4 h-4 mr-2" />
+                      Dev
                     </Button>
                     <Button variant="clean" className="w-full" onClick={handleSignOut}>
                       <LogOut className="w-4 h-4 mr-2" />
@@ -156,9 +157,8 @@ const Header = () => {
                   </>
                 ) : (
                   <>
-                    <Button variant="clean" className="w-full" onClick={handleDevAuth}>
-                      <Code className="w-4 h-4 mr-2" />
-                      Dev
+                    <Button variant="clean" className="w-full" onClick={() => navigate('/auth')}>
+                      Log in
                     </Button>
                     <Button variant="hero" className="w-full" onClick={() => navigate('/auth')}>
                       Start Now →
