@@ -21,38 +21,40 @@ const Header = () => {
     const password = prompt("Enter dev password:");
     if (password === "A16") {
       try {
-        // Use a simple, valid dev email
-        const randomNum = Math.floor(Math.random() * 10000);
-        const devEmail = `dev${randomNum}@gmail.com`;
-        const devPassword = 'Password123!';
+        // Generate unique dev credentials
+        const timestamp = Date.now();
+        const devEmail = `dev${timestamp}@example.com`;
+        const devPassword = 'DevPassword123!';
 
-        // Create and sign in the dev user
+        console.log('Creating dev user with email:', devEmail);
+
+        // Create and auto-confirm the dev user
         const { data, error } = await supabase.auth.signUp({
           email: devEmail,
           password: devPassword,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/app/dashboard`,
             data: {
               full_name: 'Dev User',
-              first_name: 'Dev',
-              last_name: 'User'
+              company_name: 'Dev Company'
             }
           }
         });
 
         if (error) {
+          console.error('Dev signup error:', error);
           throw error;
         }
 
+        console.log('Dev user created:', data);
+
         toast({
           title: "Dev Mode Activated",
-          description: `Created and signed in as ${devEmail}`
+          description: `Created dev user: ${devEmail}`,
         });
 
         // Navigate to dashboard
-        setTimeout(() => {
-          navigate('/app/dashboard');
-        }, 1000);
+        navigate('/app/dashboard');
 
       } catch (error: any) {
         console.error('Dev auth error:', error);

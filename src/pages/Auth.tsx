@@ -26,7 +26,7 @@ const Auth = () => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/app/dashboard`,
           data: {
             company_name: companyName,
           }
@@ -62,7 +62,7 @@ const Auth = () => {
 
       if (error) throw error;
 
-      navigate('/dashboard');
+      navigate('/app/dashboard');
     } catch (error: any) {
       toast({
         title: "Error",
