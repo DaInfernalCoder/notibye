@@ -20,27 +20,10 @@ const HeroSection = () => {
             </h1>
             
             <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-              Connect your PostHog analytics and we'll automatically email customers who are about to churn. 
-              Real companies are saving 20-40% of lost revenue this way.
+              Connect your PostHog analytics and Stripe to automatically email customers when they show signs of churn. 
+              Set custom triggers for low engagement, subscription cancellations, and payment failures.
             </p>
 
-            {/* Social Proof Numbers */}
-            <div className="flex items-center justify-center gap-8 py-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">$2.3M</div>
-                <div className="text-sm text-muted-foreground">Revenue saved</div>
-              </div>
-              <div className="w-px h-12 bg-border"></div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">73%</div>
-                <div className="text-sm text-muted-foreground">Average save rate</div>
-              </div>
-              <div className="w-px h-12 bg-border"></div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">2 min</div>
-                <div className="text-sm text-muted-foreground">Setup time</div>
-              </div>
-            </div>
           </div>
 
           {/* CTA Section */}

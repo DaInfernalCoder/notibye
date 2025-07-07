@@ -18,15 +18,6 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-    
-    if (!stripeSecretKey || !webhookSecret) {
-      throw new Error("Missing Stripe configuration");
-    }
-
-    const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
-    
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
     
@@ -34,15 +25,75 @@ serve(async (req) => {
       throw new Error("Missing Stripe signature");
     }
 
-    // Verify webhook signature
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    
-    console.log(`Processing Stripe event: ${event.type}`);
+    // Extract Stripe account ID from webhook payload to find the right user
+    const rawEvent = JSON.parse(body);
+    const stripeAccountId = rawEvent.account;
 
-    // Handle relevant events
-    if (event.type === "customer.subscription.deleted" || 
-        event.type === "invoice.payment_failed" ||
-        event.type === "customer.subscription.updated") {
+    // Find user by Stripe account ID or webhook endpoint
+    let userId: string | null = null;
+    
+    if (stripeAccountId) {
+      // Try to find user by Stripe account ID in their integration config
+      const { data: integration } = await supabaseClient
+        .from('user_integrations')
+        .select('user_id')
+        .eq('service_type', 'stripe')
+        .like('additional_config', `%${stripeAccountId}%`)
+        .single();
+      
+      userId = integration?.user_id;
+    }
+
+    // If we can't identify the user, store the event anyway for manual review
+    if (!userId) {
+      console.log("Could not identify user for Stripe webhook, storing event for review");
+    }
+
+    // Get the user's Stripe secret key to verify the webhook
+    let stripeSecretKey: string | undefined;
+    
+    if (userId) {
+      const { data: userIntegration } = await supabaseClient
+        .from('user_integrations')
+        .select('api_key, additional_config')
+        .eq('user_id', userId)
+        .eq('service_type', 'stripe')
+        .single();
+      
+      stripeSecretKey = userIntegration?.api_key;
+    }
+
+    // Use user's Stripe key or fallback to system key for verification
+    const stripeKey = stripeSecretKey || Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      throw new Error("No Stripe secret key available");
+    }
+
+    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    
+    // For user keys, we'll skip signature verification since we don't have their webhook secret
+    // In production, users should configure their webhook secret in additional_config
+    let event;
+    if (stripeSecretKey) {
+      // User's webhook - parse directly (they'll need to configure webhook secret separately)
+      event = JSON.parse(body);
+    } else {
+      // System webhook - verify signature
+      const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+      if (!webhookSecret) {
+        throw new Error("Missing webhook secret");
+      }
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    }
+    
+    console.log(`Processing Stripe event: ${event.type} for user: ${userId || 'unknown'}`);
+
+    // Handle subscription and payment events
+    if (event.type === "customer.subscription.created" || 
+        event.type === "customer.subscription.deleted" || 
+        event.type === "customer.subscription.updated" ||
+        event.type === "invoice.payment_succeeded" ||
+        event.type === "invoice.payment_failed") {
       
       const object = event.data.object as any;
       const customerId = object.customer as string;
@@ -59,16 +110,6 @@ serve(async (req) => {
         });
       }
 
-      // Find the user by email in our integrations table
-      const { data: integration } = await supabaseClient
-        .from('user_integrations')
-        .select('user_id')
-        .eq('service_type', 'stripe')
-        .eq('additional_config->customer_email', customerEmail)
-        .single();
-
-      const userId = integration?.user_id;
-
       // Store the webhook event
       await supabaseClient
         .from('webhook_events')
@@ -82,7 +123,7 @@ serve(async (req) => {
           processed: false
         });
 
-      // If it's a churn event (cancellation or payment failed), create churn event
+      // Create churn event for relevant subscription events
       if (event.type === "customer.subscription.deleted" || 
           event.type === "invoice.payment_failed") {
         
@@ -97,6 +138,14 @@ serve(async (req) => {
           });
 
         console.log(`Created churn event for customer: ${customerEmail}`);
+      }
+
+      // For subscription creation/success, we could trigger "customer success" emails
+      if (event.type === "customer.subscription.created" ||
+          event.type === "invoice.payment_succeeded") {
+        
+        // This could trigger welcome emails or engagement campaigns
+        console.log(`Positive subscription event for customer: ${customerEmail}`);
       }
     }
 

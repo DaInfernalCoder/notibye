@@ -526,6 +526,9 @@ const TriggerCreate = () => {
                             <SelectItem value="session_duration">Session Duration</SelectItem>
                             <SelectItem value="page_views">Page Views</SelectItem>
                             <SelectItem value="feature_usage">Feature Usage</SelectItem>
+                            <SelectItem value="stripe_subscription_cancelled">Stripe: Subscription Cancelled</SelectItem>
+                            <SelectItem value="stripe_subscription_created">Stripe: New Subscription</SelectItem>
+                            <SelectItem value="stripe_payment_failed">Stripe: Payment Failed</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -583,6 +586,7 @@ const TriggerCreate = () => {
                           <SelectContent>
                             <SelectItem value="usage_drop">Usage Drop</SelectItem>
                             <SelectItem value="threshold">Threshold</SelectItem>
+                            <SelectItem value="stripe_event">Stripe Event</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

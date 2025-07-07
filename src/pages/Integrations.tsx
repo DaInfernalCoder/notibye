@@ -192,7 +192,7 @@ const Integrations = () => {
                 <CardTitle>Stripe</CardTitle>
               </div>
               <CardDescription>
-                Connect your Stripe account to receive webhook notifications when customers cancel subscriptions or payments fail.
+                Connect your Stripe account to track subscription events (new subscriptions, cancellations, payment failures) and trigger automated emails.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -293,7 +293,7 @@ const Integrations = () => {
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold mt-0.5">2</div>
-                  <p>Configure webhook endpoints in Stripe for subscription events</p>
+                  <p>Set up webhook endpoint: <code className="text-xs bg-muted px-1 rounded">https://celmmsdzizebswawmdee.supabase.co/functions/v1/stripe-webhook</code></p>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold mt-0.5">3</div>
