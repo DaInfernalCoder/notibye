@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Eye, Mail, Code, X, Send } from 'lucide-react';
 import { useDebug } from '@/hooks/useDebug';
+import { sanitizeHTML } from '@/lib/sanitize';
 
 interface EmailTemplate {
   id: string;
@@ -150,9 +151,11 @@ export const TemplatePreviewModal = ({
                         <div 
                           className="whitespace-pre-wrap text-foreground leading-relaxed"
                           dangerouslySetInnerHTML={{ 
-                            __html: template.is_visual 
-                              ? replaceVariables(template.body_html)
-                              : previewContent.replace(/\n/g, '<br/>')
+                            __html: sanitizeHTML(
+                              template.is_visual 
+                                ? replaceVariables(template.body_html)
+                                : previewContent.replace(/\n/g, '<br/>')
+                            )
                           }}
                         />
                       </div>

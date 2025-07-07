@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, CreditCard, Activity, Mail, Save } from 'lucide-react';
+import { validateApiKey, isValidEmail, sanitizeInput } from '@/lib/sanitize';
 
 interface Integration {
   id: string;
@@ -75,6 +76,16 @@ const Integrations = () => {
 
   const saveIntegration = async (serviceType: string, apiKey: string, additionalConfig = {}) => {
     if (!apiKey.trim()) return;
+    
+    // Validate API key format
+    if (!validateApiKey(apiKey, serviceType as 'stripe' | 'posthog' | 'resend')) {
+      toast({
+        title: "Invalid API Key",
+        description: `Please enter a valid ${serviceType} API key.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const existingIntegration = integrations.find(i => i.service_type === serviceType);
@@ -203,7 +214,7 @@ const Integrations = () => {
                   type="password"
                   placeholder="sk_live_..."
                   value={stripeKey}
-                  onChange={(e) => setStripeKey(e.target.value)}
+                  onChange={(e) => setStripeKey(sanitizeInput(e.target.value))}
                 />
                 <p className="text-xs text-muted-foreground">
                   Find your secret key in your Stripe Dashboard under Developers &gt; API keys
@@ -231,7 +242,7 @@ const Integrations = () => {
                   type="password"
                   placeholder="phc_..."
                   value={posthogKey}
-                  onChange={(e) => setPosthogKey(e.target.value)}
+                  onChange={(e) => setPosthogKey(sanitizeInput(e.target.value))}
                 />
               </div>
               <div className="space-y-2">
@@ -240,7 +251,7 @@ const Integrations = () => {
                   id="posthog-project"
                   placeholder="12345"
                   value={posthogProjectId}
-                  onChange={(e) => setPosthogProjectId(e.target.value)}
+                  onChange={(e) => setPosthogProjectId(sanitizeInput(e.target.value))}
                 />
               </div>
               <p className="text-xs text-muted-foreground">
@@ -268,7 +279,7 @@ const Integrations = () => {
                   type="password"
                   placeholder="re_..."
                   value={resendKey}
-                  onChange={(e) => setResendKey(e.target.value)}
+                  onChange={(e) => setResendKey(sanitizeInput(e.target.value))}
                 />
                 <p className="text-xs text-muted-foreground">
                   Create an API key at resend.com/api-keys

@@ -49,8 +49,14 @@ serve(async (req) => {
       console.log("Could not identify user for Stripe webhook, storing event for review");
     }
 
-    // Get the user's Stripe secret key to verify the webhook
+    // Validate request size to prevent DoS attacks
+    if (body.length > 1024 * 1024) { // 1MB limit
+      throw new Error("Request payload too large");
+    }
+
+    // Get the user's Stripe secret key and webhook secret to verify the webhook
     let stripeSecretKey: string | undefined;
+    let webhookSecret: string | undefined;
     
     if (userId) {
       const { data: userIntegration } = await supabaseClient
@@ -61,29 +67,31 @@ serve(async (req) => {
         .single();
       
       stripeSecretKey = userIntegration?.api_key;
+      webhookSecret = userIntegration?.additional_config?.webhook_secret;
     }
 
     // Use user's Stripe key or fallback to system key for verification
     const stripeKey = stripeSecretKey || Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
-      throw new Error("No Stripe secret key available");
+      throw new Error("Stripe configuration not found");
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     
-    // For user keys, we'll skip signature verification since we don't have their webhook secret
-    // In production, users should configure their webhook secret in additional_config
+    // SECURITY: Always verify webhook signature
     let event;
-    if (stripeSecretKey) {
-      // User's webhook - parse directly (they'll need to configure webhook secret separately)
-      event = JSON.parse(body);
-    } else {
-      // System webhook - verify signature
-      const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-      if (!webhookSecret) {
-        throw new Error("Missing webhook secret");
-      }
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    const secretToUse = webhookSecret || Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    
+    if (!secretToUse) {
+      console.error("No webhook secret configured for user:", userId);
+      throw new Error("Webhook verification failed - no secret configured");
+    }
+    
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, secretToUse);
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err);
+      throw new Error("Webhook verification failed");
     }
     
     console.log(`Processing Stripe event: ${event.type} for user: ${userId || 'unknown'}`);
@@ -156,7 +164,16 @@ serve(async (req) => {
 
   } catch (error: any) {
     console.error("Webhook error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    
+    // Don't expose sensitive error details to prevent information leakage
+    const publicError = error.message.includes("verification failed") || 
+                       error.message.includes("configuration not found") ||
+                       error.message.includes("payload too large") ||
+                       error.message.includes("signature")
+      ? error.message 
+      : "Webhook processing failed";
+    
+    return new Response(JSON.stringify({ error: publicError }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
     });
