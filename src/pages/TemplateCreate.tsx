@@ -268,7 +268,7 @@ const TemplateCreate = () => {
       // Test Supabase connection first
       const { data: testData, error: testError } = await supabase
         .from('email_templates')
-        .select('count(*)')
+        .select('id')
         .limit(1);
       
       if (testError) {
