@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Settings, Zap, Mail, History, Plus } from 'lucide-react';
+import { Home, Settings, Zap, Mail, History, Plus, CalendarDays } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -42,6 +42,12 @@ const navigationItems = [
     url: '/app/history',
     icon: History,
     description: 'View sent emails'
+  },
+  {
+    title: 'User Timeline',
+    url: '/app/timeline',
+    icon: CalendarDays,
+    description: 'Track user journeys'
   },
 ];
 

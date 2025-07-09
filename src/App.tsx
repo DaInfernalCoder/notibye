@@ -14,6 +14,7 @@ import TriggerCreate from "./pages/TriggerCreate";
 import Templates from "./pages/Templates";
 import TemplateCreate from "./pages/TemplateCreate";
 import History from "./pages/History";
+import Timeline from "./pages/Timeline";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/app/templates" element={<AppLayout><Templates /></AppLayout>} />
             <Route path="/app/templates/new" element={<AppLayout><TemplateCreate /></AppLayout>} />
             <Route path="/app/history" element={<AppLayout><History /></AppLayout>} />
+            <Route path="/app/timeline" element={<AppLayout><Timeline /></AppLayout>} />
             {/* Legacy redirects */}
             <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
             <Route path="/integrations" element={<Navigate to="/app/integrations" replace />} />
