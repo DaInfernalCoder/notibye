@@ -1,115 +1,151 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Clock, CheckCircle, BarChart3 } from "lucide-react";
+import { ArrowRight, Zap, Mail, BarChart3, Sparkles, CheckCircle, Clock, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const steps = [
+const workflowSteps = [
   {
-    number: "1",
-    title: "Connect PostHog (2 minutes)",
-    description: "Add your PostHog API key and we'll start analyzing your customer behavior patterns immediately.",
+    number: "01",
+    title: "PostHog → notibye",
+    description: "Connect your PostHog analytics in under 60 seconds. We immediately start analyzing user behavior patterns.",
     icon: BarChart3,
-    time: "2 min",
-    detail: "We pull engagement data, feature usage, and activity patterns from your existing analytics."
+    details: "Tracks 12+ engagement signals including feature adoption, session depth, and usage velocity."
   },
   {
-    number: "2", 
-    title: "Create Email Templates",
-    description: "Design emails that actually work. Use customer data like engagement scores and usage stats in your messages.",
-    icon: CheckCircle,
-    time: "5 min",
-    detail: "Templates auto-fill with real customer data like 'Your engagement dropped 40% this week.'"
+    number: "02",
+    title: "Smart Detection",
+    description: "Our algorithm identifies at-risk customers before they decide to leave. No false alarms, just real churn signals.",
+    icon: Zap,
+    details: "87% prediction accuracy using multi-signal analysis and machine learning."
   },
   {
-    number: "3",
-    title: "Set Trigger Rules", 
-    description: "Tell us when to send emails: 'If engagement drops below 30%, send retention email.' Then we handle everything.",
-    icon: Clock,
-    time: "3 min",
-    detail: "Example: Send email when customer hasn't used key features for 7 days and engagement < 40%."
+    number: "03",
+    title: "Personal Outreach",
+    description: "Automatically send personalized emails with their actual usage data. Feel human, not robotic.",
+    icon: Mail,
+    details: "Dynamic templates with real customer data and context-aware messaging."
   }
 ];
 
 const HowItWorksSection = () => {
+  const navigate = useNavigate();
+
   return (
-    <section id="how-it-works" className="py-24 lg:py-32 bg-background">
+    <section id="how-it-works" className="py-32 bg-gradient-to-b from-muted/30 to-background">
       <div className="container mx-auto px-6">
         <div className="text-center mb-20">
-          <h2 className="text-3xl lg:text-5xl font-bold mb-6">
-            Setup takes 10 minutes, saves customers forever
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border shadow-sm mb-8">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Simple</span> setup, powerful results
+            </span>
+          </div>
+          
+          <h2 className="text-4xl lg:text-6xl font-bold mb-8 leading-tight">
+            From setup to first save
+            <br />
+            <span className="text-primary">in under an hour.</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Most churn prevention tools take weeks to implement. We designed notibye to work with your existing PostHog setup.
+          
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            While other tools require complex configurations and weeks of setup, 
+            notibye works with your existing PostHog data immediately.
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto">
-          {steps.map((step, index) => (
-            <div key={index} className="relative">
-              {/* Connector Line */}
-              {index < steps.length - 1 && (
-                <div className="absolute left-6 top-20 w-0.5 h-24 bg-primary/20 z-0 lg:hidden"></div>
-              )}
-              
-              <Card className={`mb-8 ${index % 2 === 1 ? 'lg:ml-auto lg:w-3/4' : 'lg:mr-auto lg:w-3/4'}`}>
-                <CardContent className="p-8">
-                  <div className="flex items-start gap-6">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-primary text-primary-foreground rounded-xl flex items-center justify-center font-bold text-lg">
-                        {step.number}
+        {/* Visual workflow */}
+        <div className="max-w-6xl mx-auto mb-20">
+          <div className="grid lg:grid-cols-3 gap-8">
+            {workflowSteps.map((step, index) => (
+              <div key={index} className="relative group">
+                {/* Connector line for desktop */}
+                {index < workflowSteps.length - 1 && (
+                  <div className="hidden lg:block absolute top-20 -right-4 w-8 h-px bg-gradient-to-r from-primary/30 to-transparent"></div>
+                )}
+                
+                <Card className="h-full group-hover:shadow-elegant transition-all duration-300 border-border/50 group-hover:border-primary/20">
+                  <CardContent className="p-8">
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center group-hover:shadow-glow transition-all duration-300">
+                          <step.icon className="w-8 h-8 text-primary" />
+                        </div>
+                        <div className="text-2xl font-bold text-primary/60">{step.number}</div>
                       </div>
-                    </div>
-                    
-                    <div className="flex-1 space-y-4">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-bold">{step.title}</h3>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
-                          <Clock className="w-3 h-3" />
-                          {step.time}
+                      
+                      <div>
+                        <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+                        <p className="text-muted-foreground leading-relaxed mb-4">
+                          {step.description}
+                        </p>
+                        <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                          {step.details}
                         </div>
                       </div>
-                      
-                      <p className="text-muted-foreground text-lg">
-                        {step.description}
-                      </p>
-                      
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Example:</strong> {step.detail}
-                        </p>
-                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Results showcase */}
-        <div className="mt-20 text-center">
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-8 max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold mb-6">Then watch the magic happen</h3>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">Within 24hrs</div>
-                <p className="text-sm text-muted-foreground">First at-risk customers identified</p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">Week 1</div>
-                <p className="text-sm text-muted-foreground">First customers saved from churning</p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-2">Month 1</div>
-                <p className="text-sm text-muted-foreground">20-40% reduction in churn rate</p>
-              </div>
-            </div>
+        {/* Timeline of success */}
+        <div className="text-center">
+          <Card className="bg-gradient-to-r from-primary/5 via-background to-primary/5 border-primary/20 shadow-elegant max-w-5xl mx-auto">
+            <CardContent className="p-12">
+              <div className="space-y-8">
+                <div className="flex items-center justify-center gap-3 mb-8">
+                  <Users className="w-8 h-8 text-primary" />
+                  <h3 className="text-3xl font-bold">Timeline to Success</h3>
+                </div>
+                
+                <div className="grid md:grid-cols-4 gap-8">
+                  <div className="text-center space-y-3">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                      <Clock className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="text-2xl font-bold text-primary">5 min</div>
+                    <p className="text-sm text-muted-foreground">PostHog connected, analyzing data</p>
+                  </div>
+                  
+                  <div className="text-center space-y-3">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                      <Zap className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="text-2xl font-bold text-primary">24 hrs</div>
+                    <p className="text-sm text-muted-foreground">First at-risk customers identified</p>
+                  </div>
+                  
+                  <div className="text-center space-y-3">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                      <Mail className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="text-2xl font-bold text-primary">Week 1</div>
+                    <p className="text-sm text-muted-foreground">First retention emails sent</p>
+                  </div>
+                  
+                  <div className="text-center space-y-3">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                      <CheckCircle className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="text-2xl font-bold text-primary">Month 1</div>
+                    <p className="text-sm text-muted-foreground">20-40% churn reduction</p>
+                  </div>
+                </div>
 
-            <Button className="mt-8 gap-2" size="lg">
-              Start Your 10-Minute Setup
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
+                <div className="pt-8 border-t border-border">
+                  <Button size="xl" className="gap-2 shadow-glow" onClick={() => navigate('/auth')}>
+                    Start Saving Customers Now
+                    <ArrowRight className="w-5 h-5" />
+                  </Button>
+                  <p className="text-sm text-muted-foreground mt-3">
+                    Free trial • Connect PostHog in minutes • See results in days
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

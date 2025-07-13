@@ -6,10 +6,10 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-6">
             <div className="flex items-center">
-              <span className="text-xl font-semibold">ChurnFlow</span>
+              <span className="text-xl font-semibold">notibye</span>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Understand why customers churn and win them back with data-driven insights.
+              Save customers before they leave. Built for SaaS founders who care about retention.
             </p>
           </div>
 
@@ -63,7 +63,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-16 pt-8 border-t border-border text-center">
-          <p className="text-muted-foreground text-sm">&copy; 2024 ChurnFlow. All rights reserved.</p>
+          <p className="text-muted-foreground text-sm">&copy; 2024 notibye. All rights reserved.</p>
         </div>
       </div>
     </footer>
