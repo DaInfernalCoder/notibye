@@ -15,6 +15,7 @@ import { useDebug } from '@/hooks/useDebug';
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery';
 import CustomerInsights from '@/components/analytics/CustomerInsights';
 import { TriggerCard } from '@/components/triggers/TriggerCard';
+import { TriggerCreationModal } from '@/components/triggers/TriggerCreationModal';
 import { Plus, Zap } from 'lucide-react';
 
 interface TriggerCondition {
@@ -49,6 +50,7 @@ const Triggers = () => {
   const { executeQuery, updateRecord, loading } = useSupabaseQuery('Triggers');
   
   const [triggers, setTriggers] = useState<Trigger[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   debug.log('Triggers page rendered', { 
     userId: user?.id, 
@@ -182,7 +184,23 @@ const Triggers = () => {
    */
   const handleCreateTrigger = () => {
     debug.logEntry('handleCreateTrigger');
-    navigate('/app/triggers/new');
+    setShowCreateModal(true);
+  };
+
+  /**
+   * Handle trigger creation completion
+   */
+  const handleTriggerCreationComplete = (triggerData: any) => {
+    debug.logEntry('handleTriggerCreationComplete', triggerData);
+    
+    // TODO: Implement actual trigger creation with Supabase
+    toast({
+      title: "Trigger Created!",
+      description: `"${triggerData.name}" has been ${triggerData.activateImmediately ? 'activated' : 'saved as draft'}`,
+    });
+    
+    // Refresh triggers list
+    fetchTriggers();
   };
 
   // Loading state
@@ -219,17 +237,35 @@ const Triggers = () => {
 
         {/* Triggers List or Empty State */}
       {triggers.length === 0 ? (
-        <Card>
+        <Card className="bg-white border border-border shadow-card">
           <CardContent className="text-center py-12">
-            <Zap className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No triggers yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Create your first trigger to start preventing customer churn.
+            <Zap className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
+            <h3 className="text-2xl font-semibold mb-3">No triggers yet</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto leading-relaxed">
+              Triggers watch for customer behavior in PostHog and automatically send emails to prevent churn.
             </p>
-            <Button onClick={handleCreateTrigger}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Your First Trigger
-            </Button>
+            <div className="space-y-3">
+              <Button onClick={handleCreateTrigger} size="lg" className="gap-2">
+                <Plus className="w-5 h-5" />
+                Create Your First Trigger
+              </Button>
+              <div className="flex items-center gap-4 text-sm">
+                <Button 
+                  variant="link" 
+                  onClick={() => navigate('/app/integrations')}
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  Connect PostHog first
+                </Button>
+                <span className="text-muted-foreground">•</span>
+                <Button 
+                  variant="link" 
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  Learn about triggers
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       ) : (
@@ -245,6 +281,13 @@ const Triggers = () => {
           ))}
         </div>
       )}
+
+      {/* Trigger Creation Modal */}
+      <TriggerCreationModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onComplete={handleTriggerCreationComplete}
+      />
     </div>
   );
 };

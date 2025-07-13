@@ -81,7 +81,7 @@ const Auth = () => {
           <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center mr-3">
             <TrendingDown className="w-7 h-7 text-primary-foreground" />
           </div>
-          <span className="text-3xl font-bold">ChurnFlow</span>
+          <span className="text-3xl font-bold">notibye</span>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">
@@ -95,7 +95,7 @@ const Auth = () => {
               <CardHeader>
                 <CardTitle>Welcome back</CardTitle>
                 <CardDescription>
-                  Sign in to your ChurnFlow account
+                  Sign in to your notibye account
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleSignIn}>
@@ -136,7 +136,7 @@ const Auth = () => {
               <CardHeader>
                 <CardTitle>Create an account</CardTitle>
                 <CardDescription>
-                  Get started with ChurnFlow today
+                  Get started with notibye today
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleSignUp}>
