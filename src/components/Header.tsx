@@ -18,7 +18,11 @@ const Header = () => {
   };
 
   const handleDevAuth = async () => {
+    console.log('Dev button clicked!'); // Debug log
+    
     const password = prompt("Enter dev password:");
+    console.log('Password entered:', password ? 'YES' : 'NO'); // Debug log
+    
     if (password === "A16") {
       try {
         // Generate unique dev credentials
@@ -28,8 +32,8 @@ const Header = () => {
 
         console.log('Creating dev user with email:', devEmail);
 
-        // Create and auto-confirm the dev user
-        const { data, error } = await supabase.auth.signUp({
+        // First try to sign up the user
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: devEmail,
           password: devPassword,
           options: {
@@ -41,25 +45,51 @@ const Header = () => {
           }
         });
 
-        if (error) {
-          console.error('Dev signup error:', error);
-          throw error;
+        console.log('Signup response:', { signUpData, signUpError });
+
+        if (signUpError) {
+          console.error('Dev signup error:', signUpError);
+          throw signUpError;
         }
 
-        console.log('Dev user created:', data);
+        // If signup succeeded but user needs confirmation, try to sign in directly
+        if (!signUpData.session) {
+          console.log('No session from signup, trying direct sign in...');
+          
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: devEmail,
+            password: devPassword
+          });
+
+          console.log('Sign in response:', { signInData, signInError });
+
+          if (signInError) {
+            // If can't sign in, the user was created but needs email confirmation
+            toast({
+              title: "Dev User Created",
+              description: `Dev user ${devEmail} created but needs email confirmation. Check Supabase settings to disable email confirmation for faster dev testing.`,
+              variant: "default"
+            });
+            return;
+          }
+        }
+
+        console.log('Dev user successfully authenticated');
 
         toast({
           title: "Dev Mode Activated",
-          description: `Created dev user: ${devEmail}`,
+          description: `Authenticated as: ${devEmail}`,
         });
 
-        // Navigate to dashboard
-        navigate('/app/dashboard');
+        // Small delay to ensure auth state is updated
+        setTimeout(() => {
+          navigate('/app/dashboard');
+        }, 100);
 
       } catch (error: any) {
         console.error('Dev auth error:', error);
         toast({
-          title: "Dev Auth Failed",
+          title: "Dev Auth Failed", 
           description: error.message || "Failed to create dev user",
           variant: "destructive"
         });
