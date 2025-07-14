@@ -14,6 +14,7 @@ interface DashboardStats {
   totalExecutions: number;
   emailsSent: number;
   successRate: number;
+  atRiskCustomers: number;
 }
 
 interface RecentTrigger {
@@ -36,6 +37,7 @@ const Dashboard = () => {
     totalExecutions: 0,
     emailsSent: 0,
     successRate: 0,
+    atRiskCustomers: 0,
   });
   const [recentTriggers, setRecentTriggers] = useState<RecentTrigger[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,17 +69,28 @@ const Dashboard = () => {
 
       if (executionsError) throw executionsError;
 
+      // Fetch at-risk customers from usage analytics (customers with low engagement or recent churn events)
+      const { data: atRiskData, error: atRiskError } = await supabase
+        .from('usage_analytics')
+        .select('id')
+        .eq('user_id', user.id)
+        .or('engagement_score.lt.0.3,last_seen.lt.' + new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+
+      if (atRiskError) console.warn('Error fetching at-risk customers:', atRiskError);
+
       // Calculate stats
       const activeTriggers = triggersData?.filter(t => t.is_active).length || 0;
       const totalExecutions = executionsData?.length || 0;
       const emailsSent = executionsData?.filter(e => e.email_sent).length || 0;
       const successRate = totalExecutions > 0 ? Math.round((emailsSent / totalExecutions) * 100) : 0;
+      const atRiskCustomers = atRiskData?.length || 0;
 
       setStats({
         activeTriggers,
         totalExecutions,
         emailsSent,
         successRate,
+        atRiskCustomers,
       });
 
       // Mock recent triggers (simplified for demo)
@@ -192,7 +205,7 @@ const Dashboard = () => {
             <AlertTriangle className="w-6 h-6 text-warning" />
           </div>
           <div className="text-3xl font-bold text-foreground mb-2">
-            {Math.floor(Math.random() * 15) + 5}
+            {stats.atRiskCustomers}
           </div>
           <p className="text-sm text-muted-foreground">
             Identified in last 7 days
