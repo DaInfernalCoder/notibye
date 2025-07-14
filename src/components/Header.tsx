@@ -27,7 +27,7 @@ const Header = () => {
       try {
         // Generate unique dev credentials
         const timestamp = Date.now();
-        const devEmail = `dev${timestamp}@example.com`;
+        const devEmail = `dev${timestamp}@gmail.com`;
         const devPassword = 'DevPassword123!';
 
         console.log('Creating dev user with email:', devEmail);
