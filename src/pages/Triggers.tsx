@@ -190,17 +190,51 @@ const Triggers = () => {
   /**
    * Handle trigger creation completion
    */
-  const handleTriggerCreationComplete = (triggerData: any) => {
+  const handleTriggerCreationComplete = async (triggerData: any) => {
     debug.logEntry('handleTriggerCreationComplete', triggerData);
     
-    // TODO: Implement actual trigger creation with Supabase
-    toast({
-      title: "Trigger Created!",
-      description: `"${triggerData.name}" has been ${triggerData.activateImmediately ? 'activated' : 'saved as draft'}`,
-    });
-    
-    // Refresh triggers list
-    fetchTriggers();
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "User not authenticated",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Save trigger to database
+      const result = await executeQuery(async () => {
+        const { supabase } = await import('@/integrations/supabase/client');
+        
+        // Create trigger
+        return supabase
+          .from('triggers')
+          .insert({
+            user_id: user.id,
+            name: triggerData.name,
+            description: triggerData.description || '',
+            frequency_type: 'daily',
+            frequency_value: null,
+            email_template_id: null,
+            is_active: triggerData.activateImmediately,
+            warning_acknowledged: false
+          })
+          .select()
+          .single();
+      }, {
+        successMessage: `"${triggerData.name}" has been ${triggerData.activateImmediately ? 'activated' : 'saved as draft'}`,
+        errorMessage: "Failed to create trigger",
+        showSuccessToast: true
+      });
+
+      if (result) {
+        // Refresh triggers list
+        fetchTriggers();
+      }
+    } catch (error) {
+      debug.logError('Failed to create trigger', error);
+    }
   };
 
   // Loading state

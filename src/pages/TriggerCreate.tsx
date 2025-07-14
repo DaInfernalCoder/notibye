@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, ArrowRight, Zap, Plus, Trash2, AlertTriangle, Play, TestTube, CheckCircle, XCircle } from 'lucide-react';
+import { PostHogMetricsBrowser } from '@/components/triggers/PostHogMetricsBrowser';
 
 // Types for better TypeScript support and debugging
 interface TriggerCondition {
@@ -24,6 +25,9 @@ interface TriggerCondition {
   threshold_value: number;
   threshold_unit: string;
   logical_operator: 'AND' | 'OR';
+  time_period?: string;
+  metric_name?: string;
+  metric_description?: string;
 }
 
 interface EmailTemplate {
@@ -85,15 +89,8 @@ const TriggerCreate = () => {
   });
 
   // Conditions with improved default
-  const [conditions, setConditions] = useState<TriggerCondition[]>([{
-    id: crypto.randomUUID(),
-    condition_type: 'usage_drop',
-    field_name: 'events_count',
-    operator: 'less_than',
-    threshold_value: 50,
-    threshold_unit: 'percent',
-    logical_operator: 'AND'
-  }]);
+  const [conditions, setConditions] = useState<TriggerCondition[]>([]);
+  const [postHogConditions, setPostHogConditions] = useState<any[]>([]);
 
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [loading, setLoading] = useState(false);
@@ -132,7 +129,7 @@ const TriggerCreate = () => {
     }
   };
 
-  // Improved condition management with better UX
+  // Enhanced condition management with PostHog integration
   const addCondition = () => {
     console.log('TriggerCreate: Adding new condition');
     const newCondition = {
@@ -148,6 +145,27 @@ const TriggerCreate = () => {
       console.log('TriggerCreate: Total conditions after add:', prev.length + 1);
       return [...prev, newCondition];
     });
+  };
+
+  const handlePostHogConditionAdd = (postHogCondition: any) => {
+    console.log('TriggerCreate: Adding PostHog condition:', postHogCondition);
+    
+    // Convert PostHog condition to our format
+    const condition: TriggerCondition = {
+      id: postHogCondition.id,
+      condition_type: 'posthog_metric',
+      field_name: postHogCondition.metric.id,
+      operator: postHogCondition.operator,
+      threshold_value: postHogCondition.threshold_value,
+      threshold_unit: postHogCondition.threshold_unit,
+      logical_operator: postHogCondition.logical_operator,
+      time_period: postHogCondition.time_period,
+      metric_name: postHogCondition.metric.name,
+      metric_description: postHogCondition.metric.description
+    };
+    
+    setConditions(prev => [...prev, condition]);
+    setPostHogConditions(prev => [...prev, postHogCondition]);
   };
 
   const removeCondition = (id: string) => {
@@ -286,7 +304,7 @@ const TriggerCreate = () => {
         break;
       case 2: // Conditions
         if (conditions.length === 0) {
-          toast({ title: "Please add at least one condition", variant: "destructive" });
+          toast({ title: "Please add at least one condition from your PostHog data", variant: "destructive" });
           return false;
         }
         break;
@@ -468,38 +486,45 @@ const TriggerCreate = () => {
             </div>
           )}
 
-          {/* Step 2: Conditions */}
+          {/* Step 2: PostHog Conditions */}
           {currentStep === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-semibold mb-2">Set Conditions</h2>
+                <h2 className="text-2xl font-semibold mb-2">Set Conditions from PostHog</h2>
                 <p className="text-muted-foreground">
-                  Define when this trigger should fire. You can add multiple conditions.
+                  Browse your actual PostHog metrics to create precise trigger conditions.
                 </p>
               </div>
 
-              <div className="space-y-4">
-                {conditions.map((condition, index) => (
-                  <Card key={condition.id} className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">Condition {index + 1}</Badge>
-                        {index > 0 && (
-                          <Select
-                            value={condition.logical_operator}
-                            onValueChange={(value: 'AND' | 'OR') => updateCondition(condition.id, 'logical_operator', value)}
-                          >
-                            <SelectTrigger className="w-20">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="AND">AND</SelectItem>
-                              <SelectItem value="OR">OR</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
-                      {conditions.length > 1 && (
+              <PostHogMetricsBrowser 
+                onConditionAdd={handlePostHogConditionAdd}
+                existingConditions={postHogConditions}
+              />
+
+              {/* Show added conditions */}
+              {conditions.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Current Conditions ({conditions.length})</h3>
+                  {conditions.map((condition, index) => (
+                    <Card key={condition.id} className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">Condition {index + 1}</Badge>
+                          {index > 0 && (
+                            <Select
+                              value={condition.logical_operator}
+                              onValueChange={(value: 'AND' | 'OR') => updateCondition(condition.id, 'logical_operator', value)}
+                            >
+                              <SelectTrigger className="w-20">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="AND">AND</SelectItem>
+                                <SelectItem value="OR">OR</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
                         <Button
                           type="button"
                           variant="ghost"
@@ -508,107 +533,25 @@ const TriggerCreate = () => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>When this metric</Label>
-                        <Select
-                          value={condition.field_name}
-                          onValueChange={(value) => updateCondition(condition.id, 'field_name', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="events_count">Total Events</SelectItem>
-                            <SelectItem value="session_duration">Session Duration</SelectItem>
-                            <SelectItem value="page_views">Page Views</SelectItem>
-                            <SelectItem value="feature_usage">Feature Usage</SelectItem>
-                            <SelectItem value="stripe_subscription_cancelled">Stripe: Subscription Cancelled</SelectItem>
-                            <SelectItem value="stripe_subscription_created">Stripe: New Subscription</SelectItem>
-                            <SelectItem value="stripe_payment_failed">Stripe: Payment Failed</SelectItem>
-                          </SelectContent>
-                        </Select>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label>Is</Label>
-                        <Select
-                          value={condition.operator}
-                          onValueChange={(value) => updateCondition(condition.id, 'operator', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="less_than">Less Than</SelectItem>
-                            <SelectItem value="greater_than">Greater Than</SelectItem>
-                            <SelectItem value="equals">Exactly</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Value</Label>
-                        <div className="flex gap-2">
-                          <Input
-                            type="number"
-                            value={condition.threshold_value}
-                            onChange={(e) => updateCondition(condition.id, 'threshold_value', Number(e.target.value))}
-                            className="flex-1"
-                          />
-                          <Select
-                            value={condition.threshold_unit}
-                            onValueChange={(value) => updateCondition(condition.id, 'threshold_unit', value)}
-                          >
-                            <SelectTrigger className="w-24">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="percent">%</SelectItem>
-                              <SelectItem value="absolute">#</SelectItem>
-                            </SelectContent>
-                          </Select>
+                      <div className="p-3 bg-muted rounded text-sm">
+                        <div className="font-medium mb-1">
+                          {condition.metric_name || condition.field_name}
+                        </div>
+                        <div className="text-muted-foreground mb-2">
+                          {condition.metric_description || 'Custom metric condition'}
+                        </div>
+                        <div>
+                          <strong>Condition:</strong> {condition.operator.replace('_', ' ')} {condition.threshold_value}
+                          {condition.threshold_unit === 'percent' ? '%' : ''} 
+                          {condition.time_period && ` in ${condition.time_period}`}
                         </div>
                       </div>
-
-                      <div className="space-y-2">
-                        <Label>Condition Type</Label>
-                        <Select
-                          value={condition.condition_type}
-                          onValueChange={(value) => updateCondition(condition.id, 'condition_type', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="usage_drop">Usage Drop</SelectItem>
-                            <SelectItem value="threshold">Threshold</SelectItem>
-                            <SelectItem value="stripe_event">Stripe Event</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* Condition preview */}
-                    <div className="mt-3 p-3 bg-muted rounded text-sm">
-                      <strong>Preview:</strong> Trigger when {getFieldDisplayName(condition.field_name)} {condition.operator.replace('_', ' ')} {condition.threshold_value}{condition.threshold_unit === 'percent' ? '%' : ''}
-                    </div>
-                  </Card>
-                ))}
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addCondition}
-                  className="w-full"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Another Condition
-                </Button>
-              </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
