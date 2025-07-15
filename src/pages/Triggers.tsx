@@ -251,50 +251,53 @@ const Triggers = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Triggers</h1>
-            <p className="text-muted-foreground">
-              Manage your churn prevention triggers
-            </p>
-          </div>
-          <Button onClick={handleCreateTrigger}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Trigger
-          </Button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">Triggers</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Manage your churn prevention triggers
+          </p>
         </div>
+        <Button onClick={handleCreateTrigger} className="w-full sm:w-auto" size="sm">
+          <Plus className="w-4 h-4 mr-2" />
+          <span className="hidden sm:inline">Create Trigger</span>
+          <span className="sm:hidden">Create</span>
+        </Button>
+      </div>
 
-        {/* Customer Analytics Insights */}
+      {/* Customer Analytics Insights - hide on mobile */}
+      <div className="hidden md:block">
         <CustomerInsights />
+      </div>
 
-        {/* Triggers List or Empty State */}
+      {/* Triggers List or Empty State */}
       {triggers.length === 0 ? (
-        <Card className="bg-white border border-border shadow-card">
-          <CardContent className="text-center py-12">
-            <Zap className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
-            <h3 className="text-2xl font-semibold mb-3">No triggers yet</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto leading-relaxed">
+        <Card className="bg-card border border-border shadow-card">
+          <CardContent className="text-center py-8 sm:py-12 px-4 sm:px-6">
+            <Zap className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4 sm:mb-6" />
+            <h3 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3">No triggers yet</h3>
+            <p className="text-muted-foreground mb-4 sm:mb-6 max-w-md mx-auto leading-relaxed text-sm sm:text-base">
               Triggers watch for customer behavior in PostHog and automatically send emails to prevent churn.
             </p>
-            <div className="space-y-3">
-              <Button onClick={handleCreateTrigger} size="lg" className="gap-2">
-                <Plus className="w-5 h-5" />
+            <div className="space-y-3 sm:space-y-4">
+              <Button onClick={handleCreateTrigger} size="default" className="gap-2 w-full sm:w-auto">
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                 Create Your First Trigger
               </Button>
-              <div className="flex items-center gap-4 text-sm">
+              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-sm">
                 <Button 
                   variant="link" 
                   onClick={() => navigate('/app/integrations')}
-                  className="text-muted-foreground hover:text-primary"
+                  className="text-muted-foreground hover:text-primary text-xs sm:text-sm"
                 >
                   Connect PostHog first
                 </Button>
-                <span className="text-muted-foreground">•</span>
+                <span className="text-muted-foreground hidden sm:inline">•</span>
                 <Button 
                   variant="link" 
-                  className="text-muted-foreground hover:text-primary"
+                  className="text-muted-foreground hover:text-primary text-xs sm:text-sm"
                 >
                   Learn about triggers
                 </Button>
@@ -303,7 +306,7 @@ const Triggers = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {triggers.map((trigger) => (
             <TriggerCard
               key={trigger.id}

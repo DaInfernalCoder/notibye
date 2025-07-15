@@ -58,30 +58,34 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
-        <SidebarInset className="flex-1">
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-            <SidebarTrigger className="-ml-1" />
+        <SidebarInset className="flex-1 flex flex-col">
+          <header className="flex h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 md:px-4">
+            <SidebarTrigger className="-ml-1 md:ml-0" />
             <div className="flex-1" />
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-1 md:gap-2">
+              <div className="hidden sm:flex items-center gap-2 text-sm">
                 <User className="w-4 h-4" />
-                <span className="text-muted-foreground">{user?.email || 'dev@example.com'}</span>
+                <span className="text-muted-foreground hidden md:inline">
+                  {user?.email || 'dev@example.com'}
+                </span>
               </div>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={handleSignOut}
-                className="gap-2"
+                className="gap-1 md:gap-2 text-xs md:text-sm"
               >
                 <LogOut className="w-4 h-4" />
-                Sign Out
+                <span className="hidden sm:inline">Sign Out</span>
               </Button>
             </div>
           </header>
-          <main className="flex-1 p-6">
-            {children}
+          <main className="flex-1 p-3 sm:p-4 md:p-6 bg-gradient-to-br from-background via-muted/20 to-accent/30">
+            <div className="max-w-7xl mx-auto w-full">
+              {children}
+            </div>
           </main>
         </SidebarInset>
       </div>

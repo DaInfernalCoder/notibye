@@ -156,38 +156,39 @@ const Templates = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Email Templates</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold">Email Templates</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Create and manage your email templates with dynamic variables
           </p>
         </div>
-        <Button onClick={handleCreateTemplate}>
+        <Button onClick={handleCreateTemplate} className="w-full sm:w-auto" size="sm">
           <Plus className="w-4 h-4 mr-2" />
-          Create Template
+          <span className="hidden sm:inline">Create Template</span>
+          <span className="sm:hidden">Create</span>
         </Button>
       </div>
 
       {/* Templates Grid or Empty State */}
       {templates.length === 0 ? (
         <Card>
-          <CardContent className="text-center py-12">
-            <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No templates yet</h3>
-            <p className="text-muted-foreground mb-4">
+          <CardContent className="text-center py-8 sm:py-12 px-4 sm:px-6">
+            <Mail className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-medium mb-2">No templates yet</h3>
+            <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base">
               Create your first email template to use in your triggers.
             </p>
-            <Button onClick={handleCreateTemplate}>
+            <Button onClick={handleCreateTemplate} className="w-full sm:w-auto" size="sm">
               <Plus className="w-4 h-4 mr-2" />
               Create Your First Template
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {templates.map((template) => (
             <TemplateCard
               key={template.id}
