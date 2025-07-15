@@ -61,15 +61,15 @@ const Dashboard = () => {
 
       if (triggersError) throw triggersError;
 
-      // Fetch trigger executions
+      // Fetch trigger executions with real counts
       const { data: executionsData, error: executionsError } = await supabase
         .from('trigger_executions')
-        .select('email_sent')
+        .select('email_sent, trigger_id')
         .in('trigger_id', triggersData?.map(t => t.id) || []);
 
       if (executionsError) throw executionsError;
 
-      // Fetch at-risk customers from usage analytics (customers with low engagement or recent churn events)
+      // Fetch at-risk customers from usage analytics
       const { data: atRiskData, error: atRiskError } = await supabase
         .from('usage_analytics')
         .select('id')
@@ -78,7 +78,7 @@ const Dashboard = () => {
 
       if (atRiskError) console.warn('Error fetching at-risk customers:', atRiskError);
 
-      // Calculate stats
+      // Calculate real stats
       const activeTriggers = triggersData?.filter(t => t.is_active).length || 0;
       const totalExecutions = executionsData?.length || 0;
       const emailsSent = executionsData?.filter(e => e.email_sent).length || 0;
@@ -93,11 +93,15 @@ const Dashboard = () => {
         atRiskCustomers,
       });
 
-      // Mock recent triggers (simplified for demo)
-      setRecentTriggers(triggersData?.slice(0, 5).map(trigger => ({
+      // Calculate real execution counts per trigger
+      const triggerExecutionCounts = triggersData?.map(trigger => ({
         ...trigger,
-        _count: { trigger_executions: Math.floor(Math.random() * 10) }
-      })) || []);
+        _count: { 
+          trigger_executions: executionsData?.filter(e => e.trigger_id === trigger.id).length || 0
+        }
+      })) || [];
+
+      setRecentTriggers(triggerExecutionCounts.slice(0, 5));
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -213,9 +217,6 @@ const Dashboard = () => {
               <div className="p-2 sm:p-3 bg-destructive/10 rounded-lg sm:rounded-xl">
                 <AlertTriangle className="w-4 h-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-destructive" />
               </div>
-              <span className="text-xs sm:text-sm font-medium text-destructive bg-destructive/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                -2.3%
-              </span>
             </div>
             <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1">
               {stats.atRiskCustomers}
@@ -235,9 +236,6 @@ const Dashboard = () => {
               <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl">
                 <Zap className="w-4 h-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-primary" />
               </div>
-              <span className="text-xs sm:text-sm font-medium text-success bg-success/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                +{stats.activeTriggers > 0 ? '12.3' : '0.0'}%
-              </span>
             </div>
             <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1">
               {stats.activeTriggers}
@@ -257,9 +255,6 @@ const Dashboard = () => {
               <div className="p-2 sm:p-3 bg-success/10 rounded-lg sm:rounded-xl">
                 <TrendingUp className="w-4 h-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-success" />
               </div>
-              <span className="text-xs sm:text-sm font-medium text-success bg-success/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                +{stats.successRate}%
-              </span>
             </div>
             <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1">
               {stats.totalExecutions}
@@ -279,9 +274,6 @@ const Dashboard = () => {
               <div className="p-2 sm:p-3 bg-secondary/10 rounded-lg sm:rounded-xl">
                 <Activity className="w-4 h-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-secondary" />
               </div>
-              <span className="text-xs sm:text-sm font-medium text-success bg-success/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                +1.2%
-              </span>
             </div>
             <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1">
               {stats.successRate}%
